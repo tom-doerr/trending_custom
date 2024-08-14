@@ -1,7 +1,8 @@
 {
+    "count": 5,
     "accounts": [
-        {"username": "karpathy", "count": 5},
-        {"username": "trishume", "count": 5},
-        {"username": "ErikBjare", "count": 5}
+        "karpathy",
+        "trishume",
+        "ErikBjare"
     ]
 }
