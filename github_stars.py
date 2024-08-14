@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import requests
-import sys
+import json
 from datetime import datetime
+from collections import defaultdict
 
 def get_newest_stars(username, count=10):
     url = f"https://api.github.com/users/{username}/starred"
@@ -16,38 +17,45 @@ def get_newest_stars(username, count=10):
         response = requests.get(url, params=params)
         response.raise_for_status()
     except requests.RequestException as e:
-        print(f"Error: Unable to fetch data. {e}")
-        return
+        print(f"Error: Unable to fetch data for {username}. {e}")
+        return []
     
     stars = response.json()
     
     if not stars:
         print(f"No starred repositories found for {username}")
-        return
+        return []
     
-    print(f"Newest {len(stars)} stars for {username}:")
-    for star in stars:
-        repo_name = star['name']
-        repo_url = star['html_url']
-        owner = star['owner']['login']
-        # The 'starred_at' information is not directly available in the API response
-        # We'll use the 'updated_at' field of the repository as an approximation
-        updated_at = datetime.strptime(star['updated_at'], "%Y-%m-%dT%H:%M:%SZ")
-        print(f"- {repo_name} (by {owner})")
-        print(f"  URL: {repo_url}")
-        print(f"  Last updated: {updated_at}")
+    return stars
+
+def process_accounts(config_file):
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+    
+    all_stars = []
+    for account in config['accounts']:
+        username = account['username']
+        count = account['count']
+        stars = get_newest_stars(username, count)
+        all_stars.extend([(star, username) for star in stars])
+    
+    return all_stars
+
+def create_ranking(all_stars):
+    repo_counts = defaultdict(list)
+    for star, username in all_stars:
+        repo_key = f"{star['owner']['login']}/{star['name']}"
+        repo_counts[repo_key].append(username)
+    
+    sorted_repos = sorted(repo_counts.items(), key=lambda x: len(x[1]), reverse=True)
+    
+    print("Repository Ranking:")
+    for i, (repo, usernames) in enumerate(sorted_repos, 1):
+        print(f"{i}. {repo} - Starred by {len(usernames)} account(s): {', '.join(usernames)}")
+        print(f"   URL: {next(star['html_url'] for star, _ in all_stars if f"{star['owner']['login']}/{star['name']}" == repo)}")
         print()
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python github_stars.py <username> [count]")
-        sys.exit(1)
-    
-    username = sys.argv[1]
-    try:
-        count = int(sys.argv[2]) if len(sys.argv) > 2 else 10
-    except ValueError:
-        print("Error: Count must be an integer")
-        sys.exit(1)
-    
-    get_newest_stars(username, count)
+    config_file = 'config.json'
+    all_stars = process_accounts(config_file)
+    create_ranking(all_stars)
