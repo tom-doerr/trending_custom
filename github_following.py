@@ -3,8 +3,8 @@
 import requests
 import json
 import csv
-import sys
 import os
+import argparse
 
 def get_following(username, count=100):
     url = f"https://api.github.com/users/{username}/following"
@@ -61,19 +61,18 @@ def write_to_csv(username, following, csv_file):
 def display_following(username, following):
     print(f"Accounts followed by {username}:")
     for i, account in enumerate(following, 1):
-        print(f"{i}. {account['login']} - {account['html_url']}")
+        follower_count = get_follower_count(account['login'])
+        print(f"{i}. {account['login']} - {account['html_url']} (Followers: {follower_count})")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: ./github_following.py <username>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Fetch GitHub following accounts")
+    parser.add_argument("username", help="GitHub username to fetch following accounts for")
+    parser.add_argument("--count", type=int, default=100, help="Number of following accounts to fetch (default: 100)")
+    args = parser.parse_args()
 
-    username = sys.argv[1]
-    config_file = 'config.json'
-    with open(config_file, 'r') as f:
-        config = json.load(f)
+    username = args.username
+    count = args.count
     
-    count = config['count']
     following = get_following(username, count)
     display_following(username, following)
     
