@@ -98,7 +98,8 @@ def create_ranking(all_stars, top_repos):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch GitHub stars for top accounts")
     parser.add_argument("--top-accounts", type=int, default=100, help="Number of top accounts to consider (default: 100)")
-    parser.add_argument("--top-repos", type=int, default=40, help="Number of top repositories to display (default: 40)")
+    parser.add_argument("--top-repos", type=int, default=50, help="Number of top repositories to display (default: 50)")
+    parser.add_argument("--final-ranking", type=int, default=50, help="Number of items to show in the final ranking (default: 50)")
     args = parser.parse_args()
 
     config = load_config()
@@ -117,7 +118,7 @@ if __name__ == "__main__":
     print(f"{Fore.YELLOW}Final Ranking")
     print(f"{Fore.CYAN}{'=' * 60}")
     
-    create_ranking(all_stars, args.top_repos)
+    create_ranking(all_stars, args.final_ranking)
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
