@@ -6,6 +6,7 @@ import csv
 import argparse
 from collections import defaultdict
 from requests.auth import HTTPBasicAuth
+from tqdm import tqdm
 
 def load_config():
     with open('config.json', 'r') as f:
@@ -53,9 +54,11 @@ def process_accounts(config_file, top_n, token):
     top_accounts = get_top_accounts(csv_file, top_n)
     
     all_stars = []
-    for username, _ in top_accounts:
-        stars = get_newest_stars(username, count, token)
-        all_stars.extend([(star, username) for star in stars])
+    with tqdm(total=len(top_accounts), desc="Processing accounts") as pbar:
+        for username, _ in top_accounts:
+            stars = get_newest_stars(username, count, token)
+            all_stars.extend([(star, username) for star in stars])
+            pbar.update(1)
     
     return all_stars
 
