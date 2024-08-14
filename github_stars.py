@@ -52,7 +52,8 @@ def create_ranking(all_stars):
     print("Repository Ranking:")
     for i, (repo, usernames) in enumerate(sorted_repos, 1):
         print(f"{i}. {repo} - Starred by {len(usernames)} account(s): {', '.join(usernames)}")
-        print(f"   URL: {next(star['html_url'] for star, _ in all_stars if f"{star['owner']['login']}/{star['name']}" == repo)}")
+        repo_url = next(star['html_url'] for star, _ in all_stars if f"{star['owner']['login']}/{star['name']}" == repo)
+        print(f"   URL: {repo_url}")
         print()
 
 if __name__ == "__main__":
