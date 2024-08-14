@@ -6,14 +6,20 @@ import csv
 import os
 import argparse
 import time
+from requests.auth import HTTPBasicAuth
 
-def make_github_request(url, params=None):
+def load_config():
+    with open('config.json', 'r') as f:
+        return json.load(f)
+
+def make_github_request(url, params=None, token=None):
     max_retries = 5
     base_delay = 1
+    headers = {'Authorization': f'token {token}'} if token else {}
 
     for attempt in range(max_retries):
         try:
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, headers=headers)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
@@ -96,9 +102,12 @@ if __name__ == "__main__":
     username = args.username
     count = args.count
     
-    following = get_following(username, count)
-    display_following(username, following)
+    config = load_config()
+    token = config.get('github_token')
+    
+    following = get_following(username, count, token)
+    display_following(username, following, token)
     
     csv_file = 'github_following.csv'
-    write_to_csv(username, following, csv_file)
+    write_to_csv(username, following, csv_file, token)
     print(f"\nData has been written to {csv_file}")
