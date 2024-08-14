@@ -5,17 +5,23 @@ import json
 import csv
 import argparse
 from collections import defaultdict
+from requests.auth import HTTPBasicAuth
 
-def get_newest_stars(username, count):
+def load_config():
+    with open('config.json', 'r') as f:
+        return json.load(f)
+
+def get_newest_stars(username, count, token):
     url = f"https://api.github.com/users/{username}/starred"
     params = {
         "sort": "created",
         "direction": "desc",
         "per_page": count
     }
+    headers = {'Authorization': f'token {token}'} if token else {}
     
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, headers=headers)
         response.raise_for_status()
     except requests.RequestException as e:
         print(f"Error: Unable to fetch data for {username}. {e}")
@@ -75,6 +81,9 @@ if __name__ == "__main__":
     parser.add_argument("--top-repos", type=int, default=40, help="Number of top repositories to display (default: 40)")
     args = parser.parse_args()
 
+    config = load_config()
+    token = config.get('github_token')
+    
     config_file = 'config.json'
-    all_stars = process_accounts(config_file, args.top_accounts)
+    all_stars = process_accounts(config_file, args.top_accounts, token)
     create_ranking(all_stars, args.top_repos)
