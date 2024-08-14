@@ -40,11 +40,11 @@ def make_github_request(url, params=None, token=None):
         
         time.sleep(1)  # Add a small delay between requests
 
-def get_following(username, count=100):
+def get_following(username, count=100, token=None):
     url = f"https://api.github.com/users/{username}/following"
     params = {"per_page": count}
     
-    following = make_github_request(url, params)
+    following = make_github_request(url, params, token)
     
     if following is None:
         return []
@@ -54,17 +54,17 @@ def get_following(username, count=100):
     
     return following
 
-def get_follower_count(username):
+def get_follower_count(username, token=None):
     url = f"https://api.github.com/users/{username}"
     
-    user_data = make_github_request(url)
+    user_data = make_github_request(url, token=token)
     
     if user_data is None:
         return None
     
     return user_data.get('followers')
 
-def write_to_csv(username, following, csv_file):
+def write_to_csv(username, following, csv_file, token):
     file_exists = os.path.isfile(csv_file)
     
     with open(csv_file, 'a', newline='') as f:
@@ -81,16 +81,16 @@ def write_to_csv(username, following, csv_file):
         
         for account in following:
             if account['login'] not in existing_accounts:
-                follower_count = get_follower_count(account['login'])
+                follower_count = get_follower_count(account['login'], token)
                 if follower_count is not None:
                     writer.writerow([account['login'], follower_count, username])
                 else:
                     print(f"Skipping {account['login']} due to error fetching follower count")
 
-def display_following(username, following):
+def display_following(username, following, token=None):
     print(f"Accounts followed by {username}:")
     for i, account in enumerate(following, 1):
-        follower_count = get_follower_count(account['login'])
+        follower_count = get_follower_count(account['login'], token)
         print(f"{i}. {account['login']} - {account['html_url']} (Followers: {follower_count})")
 
 if __name__ == "__main__":
