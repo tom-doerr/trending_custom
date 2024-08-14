@@ -13,6 +13,7 @@ def load_config():
         return json.load(f)
 
 def get_newest_stars(username, count, token):
+    print(f"\nFetching stars for user: {username}")
     url = f"https://api.github.com/users/{username}/starred"
     params = {
         "sort": "created",
@@ -59,6 +60,10 @@ def process_accounts(config_file, top_n, token):
             stars = get_newest_stars(username, count, token)
             all_stars.extend([(star, username) for star in stars])
             pbar.update(1)
+            
+            # Display current ranking after each account
+            print("\nCurrent Ranking:")
+            create_ranking(all_stars, min(10, len(all_stars)))
     
     return all_stars
 
@@ -88,5 +93,7 @@ if __name__ == "__main__":
     token = config.get('github_token')
     
     config_file = 'config.json'
+    print(f"Processing top {args.top_accounts} accounts...")
     all_stars = process_accounts(config_file, args.top_accounts, token)
+    print("\nFinal Ranking:")
     create_ranking(all_stars, args.top_repos)
