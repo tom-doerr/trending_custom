@@ -32,10 +32,9 @@ def process_accounts(config_file):
     with open(config_file, 'r') as f:
         config = json.load(f)
     
+    count = config['count']
     all_stars = []
-    for account in config['accounts']:
-        username = account['username']
-        count = account['count']
+    for username in config['accounts']:
         stars = get_newest_stars(username, count)
         all_stars.extend([(star, username) for star in stars])
     
