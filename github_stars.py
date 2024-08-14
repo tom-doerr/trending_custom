@@ -55,15 +55,18 @@ def process_accounts(config_file, top_n, token):
     top_accounts = get_top_accounts(csv_file, top_n)
     
     all_stars = []
-    with tqdm(total=len(top_accounts), desc="Processing accounts") as pbar:
+    with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
         for username, _ in top_accounts:
             stars = get_newest_stars(username, count, token)
             all_stars.extend([(star, username) for star in stars])
-            pbar.update(1)
             
             # Display current ranking after each account
             print("\nCurrent Ranking:")
             create_ranking(all_stars, min(10, len(all_stars)))
+            
+            # Update progress bar
+            pbar.update(1)
+            pbar.set_description(f"Processing accounts ({pbar.n}/{pbar.total})")
     
     return all_stars
 
