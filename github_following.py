@@ -5,23 +5,44 @@ import json
 import csv
 import os
 import argparse
+import time
+
+def make_github_request(url, params=None):
+    max_retries = 5
+    base_delay = 1
+
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 403 and 'rate limit exceeded' in str(e).lower():
+                if attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    print(f"Rate limit exceeded. Retrying in {delay} seconds...")
+                    time.sleep(delay)
+                else:
+                    print(f"Error: Rate limit exceeded. Max retries reached.")
+                    return None
+            else:
+                print(f"HTTP error occurred: {e}")
+                return None
+        except requests.RequestException as e:
+            print(f"Error: Unable to fetch data. {e}")
+            return None
+        
+        time.sleep(1)  # Add a small delay between requests
 
 def get_following(username, count=100):
     url = f"https://api.github.com/users/{username}/following"
-    params = {
-        "per_page": count
-    }
+    params = {"per_page": count}
     
-    try:
-        response = requests.get(url, params=params)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        print(f"Error: Unable to fetch data for {username}. {e}")
+    following = make_github_request(url, params)
+    
+    if following is None:
         return []
-    
-    following = response.json()
-    
-    if not following:
+    elif not following:
         print(f"No following accounts found for {username}")
         return []
     
@@ -29,14 +50,13 @@ def get_following(username, count=100):
 
 def get_follower_count(username):
     url = f"https://api.github.com/users/{username}"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        user_data = response.json()
-        return user_data['followers']
-    except requests.RequestException as e:
-        print(f"Error: Unable to fetch follower count for {username}. {e}")
+    
+    user_data = make_github_request(url)
+    
+    if user_data is None:
         return None
+    
+    return user_data.get('followers')
 
 def write_to_csv(username, following, csv_file):
     file_exists = os.path.isfile(csv_file)
@@ -56,7 +76,10 @@ def write_to_csv(username, following, csv_file):
         for account in following:
             if account['login'] not in existing_accounts:
                 follower_count = get_follower_count(account['login'])
-                writer.writerow([account['login'], follower_count, username])
+                if follower_count is not None:
+                    writer.writerow([account['login'], follower_count, username])
+                else:
+                    print(f"Skipping {account['login']} due to error fetching follower count")
 
 def display_following(username, following):
     print(f"Accounts followed by {username}:")
