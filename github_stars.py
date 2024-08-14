@@ -50,11 +50,11 @@ def get_top_accounts(csv_file, n):
     
     return sorted(accounts, key=lambda x: x[1], reverse=True)[:n]
 
-def process_accounts(config_file, top_n, token):
+def process_accounts(config_file, top_n, token, args):
     with open(config_file, 'r') as f:
         config = json.load(f)
     
-    count = config['count']
+    count = max(config['count'], args.final_ranking)
     csv_file = 'github_following.csv'
     top_accounts = get_top_accounts(csv_file, top_n)
     
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     print(f"{Fore.CYAN}{'=' * 60}\n")
     
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
-    all_stars = process_accounts(config_file, args.top_accounts, token)
+    all_stars = process_accounts(config_file, args.top_accounts, token, args)
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Final Ranking")
