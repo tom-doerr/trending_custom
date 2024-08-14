@@ -95,19 +95,22 @@ def display_following(username, following, token=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch GitHub following accounts")
-    parser.add_argument("username", help="GitHub username to fetch following accounts for")
+    parser.add_argument("--username", help="GitHub username to fetch following accounts for")
     parser.add_argument("--count", type=int, default=100, help="Number of following accounts to fetch (default: 100)")
     args = parser.parse_args()
 
-    username = args.username
-    count = args.count
-    
     config = load_config()
     token = config.get('github_token')
     
-    following = get_following(username, count, token)
-    display_following(username, following, token)
+    username = args.username or input("Enter a GitHub username: ")
+    count = args.count
     
-    csv_file = 'github_following.csv'
-    write_to_csv(username, following, csv_file, token)
-    print(f"\nData has been written to {csv_file}")
+    following = get_following(username, count, token)
+    if following:
+        display_following(username, following, token)
+        
+        csv_file = 'github_following.csv'
+        write_to_csv(username, following, csv_file, token)
+        print(f"\nData has been written to {csv_file}")
+    else:
+        print(f"No data found for user: {username}")
