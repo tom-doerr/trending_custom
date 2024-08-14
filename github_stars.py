@@ -44,7 +44,7 @@ def get_top_accounts(csv_file, n):
     
     return sorted(accounts, key=lambda x: x[1], reverse=True)[:n]
 
-def process_accounts(config_file, top_n):
+def process_accounts(config_file, top_n, token):
     with open(config_file, 'r') as f:
         config = json.load(f)
     
@@ -54,7 +54,7 @@ def process_accounts(config_file, top_n):
     
     all_stars = []
     for username, _ in top_accounts:
-        stars = get_newest_stars(username, count)
+        stars = get_newest_stars(username, count, token)
         all_stars.extend([(star, username) for star in stars])
     
     return all_stars
