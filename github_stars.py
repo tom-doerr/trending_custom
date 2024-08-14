@@ -12,22 +12,30 @@ def get_newest_stars(username, count=10):
         "per_page": count
     }
     
-    response = requests.get(url, params=params)
-    
-    if response.status_code != 200:
-        print(f"Error: Unable to fetch data. Status code: {response.status_code}")
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error: Unable to fetch data. {e}")
         return
     
     stars = response.json()
     
-    print(f"Newest {count} stars for {username}:")
+    if not stars:
+        print(f"No starred repositories found for {username}")
+        return
+    
+    print(f"Newest {len(stars)} stars for {username}:")
     for star in stars:
         repo_name = star['name']
         repo_url = star['html_url']
-        starred_at = datetime.strptime(star['starred_at'], "%Y-%m-%dT%H:%M:%SZ")
-        print(f"- {repo_name}")
+        owner = star['owner']['login']
+        # The 'starred_at' information is not directly available in the API response
+        # We'll use the 'updated_at' field of the repository as an approximation
+        updated_at = datetime.strptime(star['updated_at'], "%Y-%m-%dT%H:%M:%SZ")
+        print(f"- {repo_name} (by {owner})")
         print(f"  URL: {repo_url}")
-        print(f"  Starred at: {starred_at}")
+        print(f"  Last updated: {updated_at}")
         print()
 
 if __name__ == "__main__":
@@ -36,6 +44,10 @@ if __name__ == "__main__":
         sys.exit(1)
     
     username = sys.argv[1]
-    count = int(sys.argv[2]) if len(sys.argv) > 2 else 10
+    try:
+        count = int(sys.argv[2]) if len(sys.argv) > 2 else 10
+    except ValueError:
+        print("Error: Count must be an integer")
+        sys.exit(1)
     
     get_newest_stars(username, count)
