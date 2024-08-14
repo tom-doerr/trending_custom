@@ -7,6 +7,10 @@ import argparse
 from collections import defaultdict
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
+from colorama import init, Fore, Style
+
+# Initialize colorama
+init(autoreset=True)
 
 def load_config():
     with open('config.json', 'r') as f:
@@ -78,12 +82,17 @@ def create_ranking(all_stars, top_repos):
     
     sorted_repos = sorted(repo_counts.items(), key=lambda x: len(x[1]), reverse=True)[:top_repos]
     
-    print("Repository Ranking:")
+    print(f"\n{Fore.CYAN}{'=' * 60}")
+    print(f"{Fore.YELLOW}Repository Ranking")
+    print(f"{Fore.CYAN}{'=' * 60}\n")
+    
     for i, (repo, usernames) in enumerate(reversed(sorted_repos), 1):
         rank = top_repos - i + 1
-        print(f"{rank}. {repo} - Starred by {len(usernames)} account(s): {', '.join(usernames)}")
+        print(f"{Fore.MAGENTA}{rank:3}. {Fore.GREEN}{repo}")
+        print(f"    {Fore.CYAN}Starred by {Fore.YELLOW}{len(usernames)} {Fore.CYAN}account(s):")
+        print(f"    {Fore.YELLOW}{', '.join(usernames)}")
         repo_url = next(star['html_url'] for star, _ in all_stars if f"{star['owner']['login']}/{star['name']}" == repo)
-        print(f"   URL: {repo_url}")
+        print(f"    {Fore.CYAN}URL: {Fore.BLUE}{repo_url}")
         print()
 
 if __name__ == "__main__":
@@ -96,7 +105,20 @@ if __name__ == "__main__":
     token = config.get('github_token')
     
     config_file = 'config.json'
-    print(f"Processing top {args.top_accounts} accounts...")
+    
+    print(f"\n{Fore.CYAN}{'=' * 60}")
+    print(f"{Fore.YELLOW}GitHub Stars Analysis")
+    print(f"{Fore.CYAN}{'=' * 60}\n")
+    
+    print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
     all_stars = process_accounts(config_file, args.top_accounts, token)
-    print("\nFinal Ranking:")
+    
+    print(f"\n{Fore.CYAN}{'=' * 60}")
+    print(f"{Fore.YELLOW}Final Ranking")
+    print(f"{Fore.CYAN}{'=' * 60}")
+    
     create_ranking(all_stars, args.top_repos)
+    
+    print(f"\n{Fore.CYAN}{'=' * 60}")
+    print(f"{Fore.YELLOW}Analysis Complete")
+    print(f"{Fore.CYAN}{'=' * 60}")
