@@ -7,6 +7,10 @@ import os
 import argparse
 import time
 from requests.auth import HTTPBasicAuth
+from colorama import init, Fore, Style
+
+# Initialize colorama
+init(autoreset=True)
 
 def load_config():
     with open('config.json', 'r') as f:
@@ -88,10 +92,13 @@ def write_to_csv(username, following, csv_file, token):
                     print(f"Skipping {account['login']} due to error fetching follower count")
 
 def display_following(username, following, token=None):
-    print(f"Accounts followed by {username}:")
+    print(f"\n{Fore.CYAN}{'=' * 40}")
+    print(f"{Fore.YELLOW}Accounts followed by {Fore.GREEN}{username}{Fore.YELLOW}:")
+    print(f"{Fore.CYAN}{'=' * 40}\n")
     for i, account in enumerate(following, 1):
         follower_count = get_follower_count(account['login'], token)
-        print(f"{i}. {account['login']} - {account['html_url']} (Followers: {follower_count})")
+        print(f"{Fore.MAGENTA}{i:3}. {Fore.GREEN}{account['login']} {Fore.RESET}- {account['html_url']}")
+        print(f"    {Fore.CYAN}Followers: {Fore.YELLOW}{follower_count}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch GitHub following accounts")
@@ -105,12 +112,20 @@ if __name__ == "__main__":
     username = args.username or input("Enter a GitHub username: ")
     count = args.count
     
+    print(f"\n{Fore.CYAN}{'=' * 40}")
+    print(f"{Fore.YELLOW}GitHub Following Analysis")
+    print(f"{Fore.CYAN}{'=' * 40}\n")
+
     following = get_following(username, count, token)
     if following:
         display_following(username, following, token)
         
         csv_file = 'github_following.csv'
         write_to_csv(username, following, csv_file, token)
-        print(f"\nData has been written to {csv_file}")
+        print(f"\n{Fore.GREEN}Data has been written to {Fore.YELLOW}{csv_file}")
     else:
-        print(f"No data found for user: {username}")
+        print(f"{Fore.RED}No data found for user: {Fore.YELLOW}{username}")
+
+    print(f"\n{Fore.CYAN}{'=' * 40}")
+    print(f"{Fore.YELLOW}Analysis Complete")
+    print(f"{Fore.CYAN}{'=' * 40}")
