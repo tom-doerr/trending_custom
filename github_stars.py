@@ -23,8 +23,7 @@ def load_config():
 def load_ignored_repos():
     try:
         with open('ignored_repos.yaml', 'r') as f:
-            config = yaml.safe_load(f)
-        return set(config.get('ignored_repos', []))
+            return set(line.strip() for line in f if line.strip() and not line.startswith('#'))
     except FileNotFoundError:
         print(f"{Fore.YELLOW}Warning: ignored_repos.yaml not found. No repositories will be ignored.")
         return set()
