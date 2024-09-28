@@ -1,0 +1,4 @@
+requests
+tqdm
+colorama
+python-dotenv
