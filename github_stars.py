@@ -10,14 +10,18 @@ from collections import defaultdict
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
 from colorama import init, Fore, Style
+from dotenv import load_dotenv
 
 # Initialize colorama
 init(autoreset=True)
 
+# Load environment variables
+load_dotenv()
+
 def load_config():
     with open('config.json', 'r') as f:
         config = json.load(f)
-    config['github_token'] = os.environ.get('GITHUB_TOKEN')
+    config['github_token'] = os.getenv('GITHUB_TOKEN')
     return config
 
 def load_ignored_repos():
