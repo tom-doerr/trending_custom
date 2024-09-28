@@ -22,10 +22,10 @@ def load_config():
 
 def load_ignored_repos():
     try:
-        with open('ignored_repos.yaml', 'r') as f:
+        with open('ignored_repos.txt', 'r') as f:
             return set(line.strip() for line in f if line.strip() and not line.startswith('#'))
     except FileNotFoundError:
-        print(f"{Fore.YELLOW}Warning: ignored_repos.yaml not found. No repositories will be ignored.")
+        print(f"{Fore.YELLOW}Warning: ignored_repos.txt not found. No repositories will be ignored.")
         return set()
 
 def get_newest_stars(username, count, token):
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     
     ignored_repos = load_ignored_repos()
     if ignored_repos:
-        print(f"{Fore.YELLOW}Ignoring {len(ignored_repos)} repositories listed in ignored_repos.yaml")
+        print(f"{Fore.YELLOW}Ignoring {len(ignored_repos)} repositories listed in ignored_repos.txt")
     
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
     all_stars = process_accounts(config_file, args.top_accounts, token, args)
