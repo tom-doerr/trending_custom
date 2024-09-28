@@ -160,3 +160,22 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+
+
+
+
+
+
+# Ignore aider files
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v3/
+
+# Ignore the changes patch file
+changes.patch
+
+# Ignore config and data files
+config.json
+github_following.csv
+ignored_repos.txt

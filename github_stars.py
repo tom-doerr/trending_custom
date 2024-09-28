@@ -4,17 +4,33 @@ import requests
 import json
 import csv
 import argparse
+import yaml
+import os
 from collections import defaultdict
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
 from colorama import init, Fore, Style
+from dotenv import load_dotenv
 
 # Initialize colorama
 init(autoreset=True)
 
+# Load environment variables
+load_dotenv()
+
 def load_config():
     with open('config.json', 'r') as f:
-        return json.load(f)
+        config = json.load(f)
+    config['github_token'] = os.getenv('GITHUB_TOKEN')
+    return config
+
+def load_ignored_repos():
+    try:
+        with open('ignored_repos.txt', 'r') as f:
+            return set(line.strip() for line in f if line.strip() and not line.startswith('#'))
+    except FileNotFoundError:
+        print(f"{Fore.YELLOW}Warning: ignored_repos.txt not found. No repositories will be ignored.")
+        return set()
 
 def get_newest_stars(username, count, token):
     print(f"\nFetching stars for user: {username}")
@@ -50,19 +66,22 @@ def get_top_accounts(csv_file, n):
     
     return sorted(accounts, key=lambda x: x[1], reverse=True)[:n]
 
-def process_accounts(config_file, top_n, token):
+def process_accounts(config_file, top_n, token, args):
     with open(config_file, 'r') as f:
         config = json.load(f)
     
-    count = config['count']
+    count = max(config['count'], args.final_ranking)
     csv_file = 'github_following.csv'
     top_accounts = get_top_accounts(csv_file, top_n)
+    
+    ignored_repos = load_ignored_repos()
     
     all_stars = []
     with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
         for username, _ in top_accounts:
             stars = get_newest_stars(username, count, token)
-            all_stars.extend([(star, username) for star in stars])
+            filtered_stars = [star for star in stars if f"{star['owner']['login']}/{star['name']}" not in ignored_repos]
+            all_stars.extend([(star, username) for star in filtered_stars])
             
             # Display current ranking after each account
             print("\nCurrent Ranking:")
@@ -83,10 +102,10 @@ def create_ranking(all_stars, top_repos):
     sorted_repos = sorted(repo_counts.items(), key=lambda x: len(x[1]), reverse=True)[:top_repos]
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
-    print(f"{Fore.YELLOW}Repository Ranking")
+    print(f"{Fore.YELLOW}Repository Ranking (Least Popular at Bottom)")
     print(f"{Fore.CYAN}{'=' * 60}\n")
     
-    for i, (repo, usernames) in enumerate(reversed(sorted_repos), 1):
+    for i, (repo, usernames) in enumerate(reversed(sorted_repos[:top_repos]), 1):
         rank = top_repos - i + 1
         print(f"{Fore.MAGENTA}{rank:3}. {Fore.GREEN}{repo}")
         print(f"    {Fore.CYAN}Starred by {Fore.YELLOW}{len(usernames)} {Fore.CYAN}account(s):")
@@ -111,8 +130,12 @@ if __name__ == "__main__":
     print(f"{Fore.YELLOW}GitHub Stars Analysis")
     print(f"{Fore.CYAN}{'=' * 60}\n")
     
+    ignored_repos = load_ignored_repos()
+    if ignored_repos:
+        print(f"{Fore.YELLOW}Ignoring {len(ignored_repos)} repositories listed in ignored_repos.txt")
+    
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
-    all_stars = process_accounts(config_file, args.top_accounts, token)
+    all_stars = process_accounts(config_file, args.top_accounts, token, args)
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Final Ranking")
