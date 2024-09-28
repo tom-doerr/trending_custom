@@ -4,6 +4,7 @@ import requests
 import json
 import csv
 import argparse
+import yaml
 from collections import defaultdict
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
@@ -15,6 +16,15 @@ init(autoreset=True)
 def load_config():
     with open('config.json', 'r') as f:
         return json.load(f)
+
+def load_ignored_repos():
+    try:
+        with open('ignored_repos.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+        return set(config.get('ignored_repos', []))
+    except FileNotFoundError:
+        print(f"{Fore.YELLOW}Warning: ignored_repos.yaml not found. No repositories will be ignored.")
+        return set()
 
 def get_newest_stars(username, count, token):
     print(f"\nFetching stars for user: {username}")
@@ -58,11 +68,14 @@ def process_accounts(config_file, top_n, token, args):
     csv_file = 'github_following.csv'
     top_accounts = get_top_accounts(csv_file, top_n)
     
+    ignored_repos = load_ignored_repos()
+    
     all_stars = []
     with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
         for username, _ in top_accounts:
             stars = get_newest_stars(username, count, token)
-            all_stars.extend([(star, username) for star in stars])
+            filtered_stars = [star for star in stars if f"{star['owner']['login']}/{star['name']}" not in ignored_repos]
+            all_stars.extend([(star, username) for star in filtered_stars])
             
             # Display current ranking after each account
             print("\nCurrent Ranking:")
@@ -110,6 +123,10 @@ if __name__ == "__main__":
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}GitHub Stars Analysis")
     print(f"{Fore.CYAN}{'=' * 60}\n")
+    
+    ignored_repos = load_ignored_repos()
+    if ignored_repos:
+        print(f"{Fore.YELLOW}Ignoring {len(ignored_repos)} repositories listed in ignored_repos.yaml")
     
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
     all_stars = process_accounts(config_file, args.top_accounts, token, args)
