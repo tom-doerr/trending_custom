@@ -5,6 +5,7 @@ import json
 import csv
 import argparse
 import yaml
+import os
 from collections import defaultdict
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
@@ -15,7 +16,9 @@ init(autoreset=True)
 
 def load_config():
     with open('config.json', 'r') as f:
-        return json.load(f)
+        config = json.load(f)
+    config['github_token'] = os.environ.get('GITHUB_TOKEN')
+    return config
 
 def load_ignored_repos():
     try:
