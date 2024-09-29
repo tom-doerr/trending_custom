@@ -87,10 +87,6 @@ def process_accounts(config_file, top_n, token, args):
             filtered_stars = [star for star in stars if f"{star['owner']['login']}/{star['name']}" not in ignored_repos]
             all_stars.extend([(star, username) for star in filtered_stars])
             
-            # Display current ranking after each account
-            print("\nCurrent Ranking:")
-            create_ranking(all_stars, min(10, len(all_stars)))
-            
             # Update progress bar
             pbar.update(1)
             pbar.set_description(f"Processing accounts ({pbar.n}/{pbar.total})")
