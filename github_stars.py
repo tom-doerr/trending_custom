@@ -5,7 +5,7 @@ import json
 import csv
 import argparse
 import os
-import webbrowser
+import subprocess
 from collections import defaultdict
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
@@ -121,7 +121,12 @@ def display_ranking(sorted_repos, interactive=False):
         
         if interactive:
             input("Press Enter to continue...")
-            webbrowser.open(repo_url)
+            try:
+                subprocess.run(['brave', repo_url], check=True)
+            except subprocess.CalledProcessError:
+                print(f"{Fore.RED}Error: Unable to open Brave browser. Make sure it's installed and accessible from the command line.")
+            except FileNotFoundError:
+                print(f"{Fore.RED}Error: Brave browser not found. Make sure it's installed and accessible from the command line.")
             add_to_ignored_repos(repo)
 
 if __name__ == "__main__":
