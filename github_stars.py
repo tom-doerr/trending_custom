@@ -108,10 +108,10 @@ def create_ranking(all_stars, top_repos):
     for i, (repo, usernames) in enumerate(reversed(sorted_repos[:top_repos]), 1):
         rank = top_repos - i + 1
         print(f"{Fore.MAGENTA}{rank:3}. {Fore.GREEN}{repo}")
-        print(f"    {Fore.CYAN}Starred by {Fore.YELLOW}{len(usernames)} {Fore.CYAN}account(s):")
-        print(f"    {Fore.YELLOW}{', '.join(usernames)}")
         repo_url = next(star['html_url'] for star, _ in all_stars if f"{star['owner']['login']}/{star['name']}" == repo)
         print(f"    {Fore.CYAN}URL: {Fore.BLUE}{repo_url}")
+        print(f"    {Fore.CYAN}Starred by {Fore.YELLOW}{len(usernames)} {Fore.CYAN}account(s):")
+        print(f"    {Fore.YELLOW}{', '.join(usernames)}")
         print()
 
 if __name__ == "__main__":
