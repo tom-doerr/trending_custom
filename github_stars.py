@@ -153,11 +153,7 @@ if __name__ == "__main__":
     
     sorted_repos = create_ranking(all_stars, args.final_ranking)
     
-    if not args.no_interactive:
-        input("Press Enter to start interactive mode...")
-        display_ranking(sorted_repos, interactive=True)
-    else:
-        display_ranking(sorted_repos, interactive=False)
+    display_ranking(sorted_repos, interactive=not args.no_interactive)
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
