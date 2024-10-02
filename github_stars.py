@@ -151,6 +151,8 @@ if __name__ == "__main__":
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
     all_stars, total_stars_considered = process_accounts(config_file, args.top_accounts, token, args)
     
+    print(f"\n{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
+    
     sorted_repos = create_ranking(all_stars, args.final_ranking)
     
     display_ranking(sorted_repos, interactive=not args.no_interactive)
