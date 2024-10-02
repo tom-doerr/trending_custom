@@ -81,17 +81,19 @@ def process_accounts(config_file, top_n, token, args):
     ignored_repos = load_ignored_repos()
     
     all_stars = []
+    total_stars_considered = 0
     with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
         for username, _ in top_accounts:
             stars = get_newest_stars(username, count, token)
             filtered_stars = [star for star in stars if f"{star['owner']['login']}/{star['name']}" not in ignored_repos]
             all_stars.extend([(star, username) for star in filtered_stars])
+            total_stars_considered += len(stars)
             
             # Update progress bar
             pbar.update(1)
             pbar.set_description(f"Processing accounts ({pbar.n}/{pbar.total})")
     
-    return all_stars
+    return all_stars, total_stars_considered
 
 def create_ranking(all_stars, top_repos):
     repo_counts = defaultdict(list)
@@ -147,7 +149,7 @@ if __name__ == "__main__":
         print(f"{Fore.YELLOW}Ignoring {len(ignored_repos)} repositories listed in ignored_repos.txt")
     
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
-    all_stars = process_accounts(config_file, args.top_accounts, token, args)
+    all_stars, total_stars_considered = process_accounts(config_file, args.top_accounts, token, args)
     
     sorted_repos = create_ranking(all_stars, args.final_ranking)
     
@@ -159,4 +161,5 @@ if __name__ == "__main__":
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
+    print(f"{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
     print(f"{Fore.CYAN}{'=' * 60}")
