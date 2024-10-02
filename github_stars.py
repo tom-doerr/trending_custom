@@ -151,7 +151,9 @@ if __name__ == "__main__":
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
     all_stars, total_stars_considered = process_accounts(config_file, args.top_accounts, token, args)
     
+    total_repos = len(set(star['id'] for star, _ in all_stars))
     print(f"\n{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
+    print(f"{Fore.CYAN}Total unique repositories: {Fore.GREEN}{total_repos}")
     
     sorted_repos = create_ranking(all_stars, args.final_ranking)
     
