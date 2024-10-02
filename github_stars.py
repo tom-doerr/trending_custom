@@ -152,7 +152,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch GitHub stars for top accounts")
     parser.add_argument("--top-accounts", type=int, default=100, help="Number of top accounts to consider (default: 100)")
     parser.add_argument("--top-repos", type=int, default=50, help="Number of top repositories to display (default: 50)")
-    parser.add_argument("--final-ranking", type=int, default=50, help="Number of items to show in the final ranking (default: 50)")
+    parser.add_argument("--final-ranking", type=int, default=100, help="Number of items to show in the final ranking (default: 100)")
     parser.add_argument("--no-interactive", action="store_true", help="Disable interactive mode")
     args = parser.parse_args()
 
