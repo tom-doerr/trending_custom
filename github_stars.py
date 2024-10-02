@@ -6,9 +6,10 @@ import csv
 import argparse
 import os
 import subprocess
-from collections import defaultdict
+from collections import defaultdict, Counter
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 from colorama import init, Fore, Style
 from dotenv import load_dotenv
 
@@ -104,6 +105,26 @@ def create_ranking(all_stars, top_repos):
     sorted_repos = sorted(repo_counts.items(), key=lambda x: len(x[1]), reverse=True)[:top_repos]
     return sorted_repos
 
+def display_distribution(all_stars):
+    star_counts = Counter(star['id'] for star, _ in all_stars)
+    distribution = Counter(star_counts.values())
+    
+    print(f"\n{Fore.CYAN}{'=' * 60}")
+    print(f"{Fore.YELLOW}Star Distribution")
+    print(f"{Fore.CYAN}{'=' * 60}\n")
+    
+    for stars, count in sorted(distribution.items()):
+        print(f"{Fore.GREEN}{stars} star{'s' if stars > 1 else ''}: {Fore.YELLOW}{count} repo{'s' if count > 1 else ''}")
+    
+    # Create a bar plot of the distribution
+    plt.figure(figsize=(10, 6))
+    plt.bar(distribution.keys(), distribution.values(), color='skyblue')
+    plt.title('Distribution of Stars Across Repositories')
+    plt.xlabel('Number of Stars')
+    plt.ylabel('Number of Repositories')
+    plt.savefig('star_distribution.png')
+    print(f"\n{Fore.CYAN}Distribution plot saved as 'star_distribution.png'")
+
 def display_ranking(sorted_repos, interactive=False):
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Repository Ranking (Most Popular at Top)")
@@ -154,6 +175,8 @@ if __name__ == "__main__":
     total_repos = len(set(star['id'] for star, _ in all_stars))
     print(f"\n{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
     print(f"{Fore.CYAN}Total unique repositories: {Fore.GREEN}{total_repos}")
+    
+    display_distribution(all_stars)
     
     sorted_repos = create_ranking(all_stars, args.final_ranking)
     
