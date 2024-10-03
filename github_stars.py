@@ -167,6 +167,7 @@ if __name__ == "__main__":
         print(f"{Fore.YELLOW}Ignoring {len(ignored_repos)} repositories listed in ignored_repos.txt")
     
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
+    print(f"{Fore.GREEN}Considering {Fore.YELLOW}{args.stars_per_account} {Fore.GREEN}newest stars per account...")
     all_stars, total_stars_considered = process_accounts(config_file, args.top_accounts, token, args)
     
     total_repos = len(set(star['id'] for star, _ in all_stars))
