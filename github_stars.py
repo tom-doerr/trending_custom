@@ -72,10 +72,7 @@ def get_top_accounts(csv_file, n):
     return sorted(accounts, key=lambda x: x[1], reverse=True)[:n]
 
 def process_accounts(config_file, top_n, token, args):
-    with open(config_file, 'r') as f:
-        config = json.load(f)
-    
-    count = max(config['count'], args.final_ranking)
+    count = args.stars_per_account
     csv_file = 'github_following.csv'
     top_accounts = get_top_accounts(csv_file, top_n)
     
@@ -151,7 +148,7 @@ def display_ranking(sorted_repos, interactive=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch GitHub stars for top accounts")
     parser.add_argument("--top-accounts", type=int, default=100, help="Number of top accounts to consider (default: 100)")
-    parser.add_argument("--top-repos", type=int, default=50, help="Number of top repositories to display (default: 50)")
+    parser.add_argument("--stars-per-account", type=int, default=50, help="Number of newest stars to consider per account (default: 50)")
     parser.add_argument("--final-ranking", type=int, default=100, help="Number of items to show in the final ranking (default: 100)")
     parser.add_argument("--no-interactive", action="store_true", help="Disable interactive mode")
     args = parser.parse_args()
