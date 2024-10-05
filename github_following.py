@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
 import requests
-import json
 import csv
 import os
 import argparse
 import time
 from requests.auth import HTTPBasicAuth
 from colorama import init, Fore, Style
+from dotenv import load_dotenv
 
 # Initialize colorama
 init(autoreset=True)
 
 def load_config():
-    with open('config.json', 'r') as f:
-        return json.load(f)
+    load_dotenv()
+    return {
+        'github_token': os.getenv('GITHUB_TOKEN')
+    }
 
 def make_github_request(url, params=None, token=None):
     max_retries = 5
@@ -108,6 +110,9 @@ if __name__ == "__main__":
 
     config = load_config()
     token = config.get('github_token')
+    if not token:
+        print(f"{Fore.RED}Error: GitHub token not found in .env file.")
+        exit(1)
     
     username = args.username or input("Enter a GitHub username: ")
     count = args.count
