@@ -11,8 +11,8 @@ This repository contains Python scripts for analyzing GitHub user data, includin
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/github-analytics-tools.git
-   cd github-analytics-tools
+   git clone https://github.com/tom_doerr/trending_custom.git
+   cd trending_custom
    ```
 
 2. Install the required dependencies:
