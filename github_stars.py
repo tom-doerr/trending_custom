@@ -67,7 +67,15 @@ def get_top_accounts(csv_file, n):
     with open(csv_file, 'r') as f:
         reader = csv.reader(f)
         next(reader)  # Skip header
-        accounts = [(row[0], int(row[1])) for row in reader]
+        for row in reader:
+            try:
+                # Try old format (username, follower_count)
+                accounts.append((row[0], int(row[1])))
+            except ValueError:
+                # New format (username, repo_list)
+                # Use number of repos as the weight
+                repo_count = len(row[1].split(','))
+                accounts.append((row[0], repo_count))
     
     return sorted(accounts, key=lambda x: x[1], reverse=True)[:n]
 
