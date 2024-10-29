@@ -73,8 +73,7 @@ def get_top_accounts(csv_file, n):
 
 def process_accounts(config_file, top_n, token, args):
     count = args.stars_per_account
-    csv_file = 'github_following.csv'
-    top_accounts = get_top_accounts(csv_file, top_n)
+    top_accounts = get_top_accounts(args.csv_file, top_n)
     
     ignored_repos = load_ignored_repos()
     
@@ -151,6 +150,8 @@ if __name__ == "__main__":
     parser.add_argument("--stars-per-account", type=int, default=50, help="Number of newest stars to consider per account (default: 50)")
     parser.add_argument("--final-ranking", type=int, default=100, help="Number of items to show in the final ranking (default: 100)")
     parser.add_argument("--no-interactive", action="store_true", help="Disable interactive mode")
+    parser.add_argument("--csv-file", type=str, default='github_following.csv', 
+                      help="Path to the GitHub following CSV file (default: github_following.csv)")
     args = parser.parse_args()
 
     config = load_config()
