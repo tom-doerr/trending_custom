@@ -6,6 +6,7 @@ import csv
 import argparse
 import os
 import subprocess
+import concurrent.futures
 from collections import defaultdict, Counter
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
@@ -79,24 +80,41 @@ def get_top_accounts(csv_file, n):
     
     return sorted(accounts, key=lambda x: x[1], reverse=True)[:n]
 
+def process_account(args):
+    username, count, token, ignored_repos = args
+    stars = get_newest_stars(username, count, token)
+    filtered_stars = [star for star in stars if f"{star['owner']['login']}/{star['name']}" not in ignored_repos]
+    return [(star, username) for star in filtered_stars], len(stars)
+
 def process_accounts(config_file, top_n, token, args):
     count = args.stars_per_account
     top_accounts = get_top_accounts(args.csv_file, top_n)
-    
     ignored_repos = load_ignored_repos()
     
     all_stars = []
     total_stars_considered = 0
+    
     with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
-        for username, _ in top_accounts:
-            stars = get_newest_stars(username, count, token)
-            filtered_stars = [star for star in stars if f"{star['owner']['login']}/{star['name']}" not in ignored_repos]
-            all_stars.extend([(star, username) for star in filtered_stars])
-            total_stars_considered += len(stars)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
+            # Prepare arguments for each account
+            process_args = [(username, count, token, ignored_repos) for username, _ in top_accounts]
             
-            # Update progress bar
-            pbar.update(1)
-            pbar.set_description(f"Processing accounts ({pbar.n}/{pbar.total})")
+            # Submit all tasks
+            future_to_username = {executor.submit(process_account, arg): arg[0] 
+                                for arg in process_args}
+            
+            # Process completed tasks as they finish
+            for future in concurrent.futures.as_completed(future_to_username):
+                username = future_to_username[future]
+                try:
+                    stars, stars_count = future.result()
+                    all_stars.extend(stars)
+                    total_stars_considered += stars_count
+                except Exception as e:
+                    print(f"{Fore.RED}Error processing {username}: {e}")
+                
+                pbar.update(1)
+                pbar.set_description(f"Processing accounts ({pbar.n}/{pbar.total})")
     
     return all_stars, total_stars_considered
 
@@ -160,6 +178,8 @@ if __name__ == "__main__":
     parser.add_argument("--no-interactive", action="store_true", help="Disable interactive mode")
     parser.add_argument("--csv-file", type=str, default='github_following.csv', 
                       help="Path to the GitHub following CSV file (default: github_following.csv)")
+    parser.add_argument("--parallel", type=int, default=5,
+                      help="Number of parallel requests (default: 5)")
     args = parser.parse_args()
 
     config = load_config()
