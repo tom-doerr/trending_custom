@@ -175,6 +175,12 @@ def display_ranking(sorted_repos, interactive=False, all_stars=None):
             except FileNotFoundError:
                 print(f"{Fore.RED}Error: Brave browser not found. Make sure it's installed and accessible from the command line.")
             add_to_ignored_repos(repo)
+            
+            # Check for changes to ignored repos after each repo
+            if recheck_and_display(all_stars, args, initial_ignored):
+                initial_ignored = load_ignored_repos()
+                # Return to avoid continuing with stale data
+                return
 
 def recheck_and_display(all_stars, args, initial_ignored):
     """Recheck ignored repos and redisplay if changed"""
@@ -238,32 +244,6 @@ if __name__ == "__main__":
     
     display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars)
     
-    # Set up file monitoring
-    class IgnoredReposHandler(FileSystemEventHandler):
-        def __init__(self, all_stars, args):
-            super().__init__()
-            self.initial_ignored = load_ignored_repos()
-            self.all_stars = all_stars
-            self.args = args
-
-        def on_modified(self, event):
-            if event.src_path.endswith('ignored_repos.txt'):
-                if recheck_and_display(self.all_stars, self.args, self.initial_ignored):
-                    self.initial_ignored = load_ignored_repos()
-
-    event_handler = IgnoredReposHandler(all_stars, args)
-    observer = Observer()
-    observer.schedule(event_handler, path='.', recursive=False)
-    observer.start()
-
-    try:
-        print(f"\n{Fore.CYAN}Monitoring ignored_repos.txt for changes... (Ctrl+C to exit)")
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-        print(f"\n{Fore.YELLOW}Exiting...")
-    observer.join()
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
