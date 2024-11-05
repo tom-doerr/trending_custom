@@ -173,20 +173,20 @@ def display_ranking(sorted_repos, interactive=False, all_stars=None):
                 print(f"{Fore.RED}Error: Brave browser not found. Make sure it's installed and accessible from the command line.")
             add_to_ignored_repos(repo)
 
-if __name__ == "__main_def recheck_and_display(all_stars, args, initial_ignored):
-if __name__ == "__main_    """Recheck ignored repos and redisplay if changed"""
-if __name__ == "__main_    current_ignored = load_ignored_repos()
-if __name__ == "__main_    if current_ignored != initial_ignored:
-if __name__ == "__main_        print(f"\n{Fore.YELLOW}Ignored repositories list has changed!")
-if __name__ == "__main_        print(f"{Fore.GREEN}Refiltering and displaying updated results...")
+def recheck_and_display(all_stars, args, initial_ignored):
+    """Recheck ignored repos and redisplay if changed"""
+    current_ignored = load_ignored_repos()
+    if current_ignored != initial_ignored:
+        print(f"\n{Fore.YELLOW}Ignored repositories list has changed!")
+        print(f"{Fore.GREEN}Refiltering and displaying updated results...")
         
-if __name__ == "__main_        sorted_repos = create_ranking(all_stars, args.final_ranking, current_ignored)
-if __name__ == "__main_        display_distribution(all_stars)
-if __name__ == "__main_        display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars)
-if __name__ == "__main_        return True
-if __name__ == "__main_    return False
+        sorted_repos = create_ranking(all_stars, args.final_ranking, current_ignored)
+        display_distribution(all_stars)
+        display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars)
+        return True
+    return False
 
-if __name__ == "__main_if __name__ == "__main__":
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch GitHub stars for top accounts")
     parser.add_argument("--top-accounts", type=int, default=100, help="Number of top accounts to consider (default: 100)")
     parser.add_argument("--stars-per-account", type=int, default=50, help="Number of newest stars to consider per account (default: 50)")
