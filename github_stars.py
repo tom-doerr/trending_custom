@@ -195,10 +195,27 @@ def display_ranking(sorted_repos, interactive=False, all_stars=None, initial_ign
                 # Return to avoid continuing with stale data
                 return
 
+class IgnoreFileHandler(FileSystemEventHandler):
+    def __init__(self):
+        self.last_modified_by_script = False
+        
+    def on_modified(self, event):
+        if event.src_path.endswith('ignored_repos.txt'):
+            if not self.last_modified_by_script:
+                self.handle_external_modification()
+            self.last_modified_by_script = False
+            
+    def handle_external_modification(self):
+        # This will be called only for external modifications
+        pass
+
 def recheck_and_display(all_stars, args, initial_ignored):
     """Recheck ignored repos and redisplay if changed"""
     current_ignored = load_ignored_repos()
     if current_ignored != initial_ignored:
+        # Set flag before modifying the file
+        file_handler.last_modified_by_script = True
+        
         from datetime import datetime
         now = datetime.now().strftime("%H:%M:%S")
         print(f"\n{Fore.YELLOW}[{now}] Ignored repositories list has changed!")
@@ -218,7 +235,15 @@ def recheck_and_display(all_stars, args, initial_ignored):
         return True
     return False
 
+# Create a global file handler instance
+file_handler = IgnoreFileHandler()
+
 if __name__ == "__main__":
+    # Set up the file system observer
+    observer = Observer()
+    observer.schedule(file_handler, path='.', recursive=False)
+    observer.start()
+    
     parser = argparse.ArgumentParser(description="Fetch GitHub stars for top accounts")
     parser.add_argument("--top-accounts", type=int, default=100, help="Number of top accounts to consider (default: 100)")
     parser.add_argument("--stars-per-account", type=int, default=50, help="Number of newest stars to consider per account (default: 50)")
