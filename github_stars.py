@@ -56,8 +56,14 @@ def get_newest_stars(username, count, token):
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 403:
-            print(f"{Fore.RED}Error: Rate limit exceeded or authentication required for {username}. "
-                  f"Check your GitHub token or wait a while.")
+            if 'X-RateLimit-Remaining' in e.response.headers:
+                remaining = e.response.headers['X-RateLimit-Remaining']
+                reset_time = time.strftime('%H:%M:%S', time.localtime(int(e.response.headers['X-RateLimit-Reset'])))
+                print(f"{Fore.RED}Error: Rate limit exceeded for {username}. "
+                      f"Remaining requests: {remaining}. Reset time: {reset_time}")
+            else:
+                print(f"{Fore.RED}Error: Rate limit exceeded or authentication required for {username}. "
+                      f"Check your GitHub token or wait a while.")
         else:
             print(f"{Fore.RED}Error: Unable to fetch data for {username}. HTTP {e.response.status_code}")
         return []
