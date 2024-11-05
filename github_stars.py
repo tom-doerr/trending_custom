@@ -13,6 +13,9 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from colorama import init, Fore, Style
 from dotenv import load_dotenv
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+import time
 
 # Initialize colorama
 init(autoreset=True)
@@ -235,15 +238,27 @@ if __name__ == "__main__":
     
     display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars)
     
-    # After initial display, keep checking for changes to ignored_repos.txt
-    while True:
-        try:
-            if recheck_and_display(all_stars, args, initial_ignored):
-                initial_ignored = load_ignored_repos()
-            input(f"\n{Fore.CYAN}Press Enter to recheck ignored repos (Ctrl+C to exit)...")
-        except KeyboardInterrupt:
-            print(f"\n{Fore.YELLOW}Exiting...")
-            break
+    # Set up file monitoring
+    class IgnoredReposHandler(FileSystemEventHandler):
+        def on_modified(self, event):
+            if event.src_path.endswith('ignored_repos.txt'):
+                nonlocal initial_ignored
+                if recheck_and_display(all_stars, args, initial_ignored):
+                    initial_ignored = load_ignored_repos()
+
+    event_handler = IgnoredReposHandler()
+    observer = Observer()
+    observer.schedule(event_handler, path='.', recursive=False)
+    observer.start()
+
+    try:
+        print(f"\n{Fore.CYAN}Monitoring ignored_repos.txt for changes... (Ctrl+C to exit)")
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+        print(f"\n{Fore.YELLOW}Exiting...")
+    observer.join()
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")

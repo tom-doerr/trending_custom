@@ -3,3 +3,4 @@ tqdm
 colorama
 python-dotenv
 matplotlib
+watchdog
