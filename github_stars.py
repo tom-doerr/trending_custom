@@ -240,13 +240,18 @@ if __name__ == "__main__":
     
     # Set up file monitoring
     class IgnoredReposHandler(FileSystemEventHandler):
+        def __init__(self, all_stars, args):
+            super().__init__()
+            self.initial_ignored = load_ignored_repos()
+            self.all_stars = all_stars
+            self.args = args
+
         def on_modified(self, event):
             if event.src_path.endswith('ignored_repos.txt'):
-                nonlocal initial_ignored
-                if recheck_and_display(all_stars, args, initial_ignored):
-                    initial_ignored = load_ignored_repos()
+                if recheck_and_display(self.all_stars, self.args, self.initial_ignored):
+                    self.initial_ignored = load_ignored_repos()
 
-    event_handler = IgnoredReposHandler()
+    event_handler = IgnoredReposHandler(all_stars, args)
     observer = Observer()
     observer.schedule(event_handler, path='.', recursive=False)
     observer.start()
