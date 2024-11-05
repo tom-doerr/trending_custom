@@ -177,9 +177,19 @@ def recheck_and_display(all_stars, args, initial_ignored):
     """Recheck ignored repos and redisplay if changed"""
     current_ignored = load_ignored_repos()
     if current_ignored != initial_ignored:
-        print(f"\n{Fore.YELLOW}Ignored repositories list has changed!")
-        print(f"{Fore.GREEN}Refiltering and displaying updated results...")
+        from datetime import datetime
+        now = datetime.now().strftime("%H:%M:%S")
+        print(f"\n{Fore.YELLOW}[{now}] Ignored repositories list has changed!")
         
+        # Show what changed
+        added = current_ignored - initial_ignored
+        removed = initial_ignored - current_ignored
+        if added:
+            print(f"{Fore.GREEN}Added to ignore list: {', '.join(added)}")
+        if removed:
+            print(f"{Fore.RED}Removed from ignore list: {', '.join(removed)}")
+            
+        print(f"{Fore.GREEN}Refiltering and displaying updated results...")
         sorted_repos = create_ranking(all_stars, args.final_ranking, current_ignored)
         display_distribution(all_stars)
         display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars)
