@@ -118,11 +118,14 @@ def process_accounts(config_file, top_n, token, args):
     
     return all_stars, total_stars_considered
 
-def create_ranking(all_stars, top_repos):
+def create_ranking(all_stars, top_repos, ignored_repos=None):
+    if ignored_repos is None:
+        ignored_repos = set()
     repo_counts = defaultdict(list)
     for star, username in all_stars:
         repo_key = f"{star['owner']['login']}/{star['name']}"
-        repo_counts[repo_key].append(username)
+        if repo_key not in ignored_repos:
+            repo_counts[repo_key].append(username)
     
     sorted_repos = sorted(repo_counts.items(), key=lambda x: len(x[1]), reverse=True)[:top_repos]
     return sorted_repos
@@ -147,7 +150,7 @@ def display_distribution(all_stars):
     plt.savefig('star_distribution.png')
     print(f"\n{Fore.CYAN}Distribution plot saved as 'star_distribution.png'")
 
-def display_ranking(sorted_repos, interactive=False):
+def display_ranking(sorted_repos, interactive=False, all_stars=None):
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Repository Ranking (Most Popular at Top)")
     print(f"{Fore.CYAN}{'=' * 60}\n")
@@ -170,7 +173,20 @@ def display_ranking(sorted_repos, interactive=False):
                 print(f"{Fore.RED}Error: Brave browser not found. Make sure it's installed and accessible from the command line.")
             add_to_ignored_repos(repo)
 
-if __name__ == "__main__":
+if __name__ == "__main_def recheck_and_display(all_stars, args, initial_ignored):
+if __name__ == "__main_    """Recheck ignored repos and redisplay if changed"""
+if __name__ == "__main_    current_ignored = load_ignored_repos()
+if __name__ == "__main_    if current_ignored != initial_ignored:
+if __name__ == "__main_        print(f"\n{Fore.YELLOW}Ignored repositories list has changed!")
+if __name__ == "__main_        print(f"{Fore.GREEN}Refiltering and displaying updated results...")
+        
+if __name__ == "__main_        sorted_repos = create_ranking(all_stars, args.final_ranking, current_ignored)
+if __name__ == "__main_        display_distribution(all_stars)
+if __name__ == "__main_        display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars)
+if __name__ == "__main_        return True
+if __name__ == "__main_    return False
+
+if __name__ == "__main_if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch GitHub stars for top accounts")
     parser.add_argument("--top-accounts", type=int, default=100, help="Number of top accounts to consider (default: 100)")
     parser.add_argument("--stars-per-account", type=int, default=50, help="Number of newest stars to consider per account (default: 50)")
@@ -191,9 +207,9 @@ if __name__ == "__main__":
     print(f"{Fore.YELLOW}GitHub Stars Analysis")
     print(f"{Fore.CYAN}{'=' * 60}\n")
     
-    ignored_repos = load_ignored_repos()
-    if ignored_repos:
-        print(f"{Fore.YELLOW}Ignoring {len(ignored_repos)} repositories listed in ignored_repos.txt")
+    initial_ignored = load_ignored_repos()
+    if initial_ignored:
+        print(f"{Fore.YELLOW}Ignoring {len(initial_ignored)} repositories listed in ignored_repos.txt")
     
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
     print(f"{Fore.GREEN}Considering {Fore.YELLOW}{args.stars_per_account} {Fore.GREEN}newest stars per account...")
@@ -205,9 +221,19 @@ if __name__ == "__main__":
     
     display_distribution(all_stars)
     
-    sorted_repos = create_ranking(all_stars, args.final_ranking)
+    sorted_repos = create_ranking(all_stars, args.final_ranking, initial_ignored)
     
-    display_ranking(sorted_repos, interactive=not args.no_interactive)
+    display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars)
+    
+    # After initial display, keep checking for changes to ignored_repos.txt
+    while True:
+        try:
+            if recheck_and_display(all_stars, args, initial_ignored):
+                initial_ignored = load_ignored_repos()
+            input(f"\n{Fore.CYAN}Press Enter to recheck ignored repos (Ctrl+C to exit)...")
+        except KeyboardInterrupt:
+            print(f"\n{Fore.YELLOW}Exiting...")
+            break
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
