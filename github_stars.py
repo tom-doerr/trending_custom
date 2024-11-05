@@ -54,8 +54,15 @@ def get_newest_stars(username, count, token):
     try:
         response = requests.get(url, params=params, headers=headers)
         response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 403:
+            print(f"{Fore.RED}Error: Rate limit exceeded or authentication required for {username}. "
+                  f"Check your GitHub token or wait a while.")
+        else:
+            print(f"{Fore.RED}Error: Unable to fetch data for {username}. HTTP {e.response.status_code}")
+        return []
     except requests.RequestException as e:
-        print(f"Error: Unable to fetch data for {username}. {e}")
+        print(f"{Fore.RED}Error: Unable to fetch data for {username}. {e}")
         return []
     
     stars = response.json()
