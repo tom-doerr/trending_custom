@@ -212,21 +212,24 @@ class IgnoreFileHandler(FileSystemEventHandler):
 def recheck_and_display(all_stars, args, initial_ignored):
     """Recheck ignored repos and redisplay if changed"""
     current_ignored = load_ignored_repos()
-    if current_ignored != initial_ignored:
+    
+    # Count how many repos were added
+    added = current_ignored - initial_ignored
+    removed = initial_ignored - current_ignored
+    
+    # Only reload if more than one repo was added at once
+    if len(added) > 1 or removed:
         # Set flag before modifying the file
         file_handler.last_modified_by_script = True
         
         from datetime import datetime
         now = datetime.now().strftime("%H:%M:%S")
-        print(f"\n{Fore.YELLOW}[{now}] Ignored repositories list has changed!")
+        print(f"\n{Fore.YELLOW}[{now}] Multiple changes detected in ignored repositories!")
         
-        # Show what changed
-        added = current_ignored - initial_ignored
-        removed = initial_ignored - current_ignored
         if added:
-            print(f"{Fore.GREEN}Added to ignore list: {', '.join(added)}")
+            print(f"{Fore.GREEN}Added to ignore list ({len(added)} repos): {', '.join(added)}")
         if removed:
-            print(f"{Fore.RED}Removed from ignore list: {', '.join(removed)}")
+            print(f"{Fore.RED}Removed from ignore list ({len(removed)} repos): {', '.join(removed)}")
             
         print(f"{Fore.GREEN}Refiltering and displaying updated results...")
         sorted_repos = create_ranking(all_stars, args.final_ranking, current_ignored)
