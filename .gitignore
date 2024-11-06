@@ -179,3 +179,7 @@ changes.patch
 config.json
 github_following.csv
 ignored_repos.txt
+.aider*
+
+github_following_repo_prediction.csv
+old_account_csvs/
