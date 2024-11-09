@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import time
+from datetime import datetime
+import os
+import pathlib
 
 # Initialize colorama
 init(autoreset=True)
@@ -133,6 +136,32 @@ def process_accounts(config_file, top_n, token, args):
                 pbar.set_description(f"Processing accounts ({pbar.n}/{pbar.total})")
     
     return all_stars, total_stars_considered
+
+def write_repo_data(sorted_repos, ignored_repos, timestamp=None):
+    """Write repository data to a timestamped file"""
+    if timestamp is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Create reports directory if it doesn't exist
+    reports_dir = pathlib.Path("reports")
+    reports_dir.mkdir(exist_ok=True)
+    
+    # Create the report file
+    report_file = reports_dir / f"repo_report_{timestamp}.txt"
+    
+    with open(report_file, "w") as f:
+        f.write(f"Repository Report - Generated at {timestamp}\n")
+        f.write("=" * 80 + "\n\n")
+        
+        for repo, usernames in sorted_repos:
+            is_ignored = repo in ignored_repos
+            f.write(f"Repository: {repo}\n")
+            f.write(f"Stars: {len(usernames)}\n")
+            f.write(f"Status: {'Previously Displayed' if is_ignored else 'New'}\n")
+            f.write("Starred by:\n")
+            for username in usernames:
+                f.write(f"  - {username}\n")
+            f.write("\n" + "-" * 40 + "\n\n")
 
 def create_ranking(all_stars, top_repos, ignored_repos=None):
     if ignored_repos is None:
@@ -283,8 +312,13 @@ if __name__ == "__main__":
     
     sorted_repos = create_ranking(all_stars, args.final_ranking, initial_ignored)
     
-    display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
+    # Generate timestamp for this run
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
+    # Write repository data before displaying
+    write_repo_data(sorted_repos, initial_ignored, timestamp)
+    
+    display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
