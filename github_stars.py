@@ -19,6 +19,7 @@ import time
 from datetime import datetime
 import os
 import pathlib
+import json
 
 # Initialize colorama
 init(autoreset=True)
@@ -138,15 +139,18 @@ def process_accounts(config_file, top_n, token, args):
     return all_stars, total_stars_considered
 
 def write_repo_data(sorted_repos, ignored_repos, timestamp=None):
-    """Write repository data to a timestamped file"""
+    """Write repository data to timestamped files in both human and machine readable formats"""
     if timestamp is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    # Create reports directory if it doesn't exist
+    # Create reports directories if they don't exist
     reports_dir = pathlib.Path("reports")
     reports_dir.mkdir(exist_ok=True)
     
-    # Create the report file
+    data_dir = pathlib.Path("data")
+    data_dir.mkdir(exist_ok=True)
+    
+    # Create the human-readable report file
     report_file = reports_dir / f"repo_report_{timestamp}.txt"
     
     with open(report_file, "w") as f:
@@ -162,6 +166,25 @@ def write_repo_data(sorted_repos, ignored_repos, timestamp=None):
             for username in usernames:
                 f.write(f"  - {username}\n")
             f.write("\n" + "-" * 40 + "\n\n")
+    
+    # Create the machine-readable JSON file
+    json_file = data_dir / f"repo_data_{timestamp}.json"
+    
+    json_data = {
+        "generated_at": timestamp,
+        "repositories": [
+            {
+                "name": repo,
+                "stars_count": len(usernames),
+                "status": "Previously Displayed" if repo in ignored_repos else "New",
+                "starred_by": usernames
+            }
+            for repo, usernames in sorted_repos
+        ]
+    }
+    
+    with open(json_file, "w") as f:
+        json.dump(json_data, f, indent=2)
 
 def create_ranking(all_stars, top_repos, ignored_repos=None):
     if ignored_repos is None:
