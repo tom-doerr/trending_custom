@@ -219,6 +219,12 @@ def display_distribution(all_stars):
     print(f"\n{Fore.CYAN}Distribution plot saved as 'star_distribution.png'")
 
 def display_ranking(sorted_repos, interactive=False, all_stars=None, initial_ignored=None):
+    # Create browser_opens.log if it doesn't exist
+    if not os.path.exists('browser_opens.log'):
+        with open('browser_opens.log', 'w') as f:
+            f.write("# Log of repositories opened in browser\n")
+            f.write("# Format: human_timestamp,unix_timestamp,repository_name\n")
+
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Repository Ranking (Most Popular at Top)")
     print(f"{Fore.CYAN}{'=' * 60}\n")
@@ -233,6 +239,13 @@ def display_ranking(sorted_repos, interactive=False, all_stars=None, initial_ign
         
         if interactive:
             input("Press Enter to continue...")
+            # Log before attempting to open browser
+            now = datetime.now()
+            human_timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+            unix_timestamp = int(now.timestamp())
+            with open('browser_opens.log', 'a') as log:
+                log.write(f"{human_timestamp},{unix_timestamp},{repo}\n")
+            
             try:
                 subprocess.run(['brave', repo_url], check=True)
             except subprocess.CalledProcessError:
