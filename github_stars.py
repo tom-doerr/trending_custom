@@ -360,6 +360,14 @@ if __name__ == "__main__":
     
     display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
     
+    # Save top N repos if requested
+    if args.save_top is not None:
+        top_n = min(args.save_top, len(sorted_repos))
+        with open(args.output_file, 'w') as f:
+            for i, (repo, usernames) in enumerate(sorted_repos[:top_n], 1):
+                f.write(f"{i}. {repo} (Starred by {len(usernames)} users)\n")
+        print(f"\n{Fore.GREEN}Saved top {top_n} repositories to {args.output_file}")
+
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
     print(f"{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
