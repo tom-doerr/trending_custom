@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import json
 import csv
 import argparse
@@ -45,6 +47,17 @@ def add_to_ignored_repos(repo):
     with open('ignored_repos.txt', 'a') as f:
         f.write(f"{repo}\n")
 
+def create_session():
+    session = requests.Session()
+    retries = Retry(
+        total=5,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"]
+    )
+    session.mount('https://', HTTPAdapter(max_retries=retries))
+    return session
+
 def get_newest_stars(username, count, token):
     print(f"\nFetching stars for user: {username}")
     url = f"https://api.github.com/users/{username}/starred"
@@ -55,8 +68,9 @@ def get_newest_stars(username, count, token):
     }
     headers = {'Authorization': f'token {token}'} if token else {}
     
+    session = create_session()
     try:
-        response = requests.get(url, params=params, headers=headers)
+        response = session.get(url, params=params, headers=headers, timeout=30)
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 403:
@@ -70,6 +84,12 @@ def get_newest_stars(username, count, token):
                       f"Check your GitHub token or wait a while.")
         else:
             print(f"{Fore.RED}Error: Unable to fetch data for {username}. HTTP {e.response.status_code}")
+        return []
+    except requests.Timeout:
+        print(f"{Fore.RED}Error: Request timed out for {username}. The server took too long to respond.")
+        return []
+    except requests.ConnectionError:
+        print(f"{Fore.RED}Error: Connection failed for {username}. Please check your internet connection.")
         return []
     except requests.RequestException as e:
         print(f"{Fore.RED}Error: Unable to fetch data for {username}. {e}")
