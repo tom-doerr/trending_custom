@@ -365,7 +365,9 @@ if __name__ == "__main__":
         top_n = min(args.save_top, len(sorted_repos))
         with open(args.output_file, 'w') as f:
             for i, (repo, usernames) in enumerate(sorted_repos[:top_n], 1):
+                repo_url = next(star['html_url'] for star, _ in all_stars if f"{star['owner']['login']}/{star['name']}" == repo)
                 f.write(f"{i}. {repo} (Starred by {len(usernames)} users)\n")
+                f.write(f"   URL: {repo_url}\n")
         print(f"\n{Fore.GREEN}Saved top {top_n} repositories to {args.output_file}")
 
     print(f"\n{Fore.CYAN}{'=' * 60}")
