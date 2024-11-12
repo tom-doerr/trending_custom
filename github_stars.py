@@ -361,8 +361,6 @@ if __name__ == "__main__":
     print(f"{Fore.GREEN}  - reports/repo_report_{timestamp}.txt (human readable)")
     print(f"{Fore.GREEN}  - data/repo_data_{timestamp}.json (machine readable)")
     
-    display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
-    
     # Save top N repos if requested
     if args.save_top is not None:
         top_n = min(args.save_top, len(sorted_repos))
@@ -372,6 +370,8 @@ if __name__ == "__main__":
                 f.write(f"{i}. {repo} (Starred by {len(usernames)} users)\n")
                 f.write(f"   URL: {repo_url}\n")
         print(f"\n{Fore.GREEN}Saved top {top_n} repositories to {args.output_file}")
+
+    display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
 
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
