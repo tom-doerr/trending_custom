@@ -321,6 +321,10 @@ if __name__ == "__main__":
                       help="Path to the GitHub following CSV file (default: github_following.csv)")
     parser.add_argument("--parallel", type=int, default=5,
                       help="Number of parallel requests (default: 5)")
+    parser.add_argument("--save-top", type=int,
+                      help="Save the top N repositories to a file")
+    parser.add_argument("--output-file", type=str, default="top_repos.txt",
+                      help="Filename to save top repositories (default: top_repos.txt)")
     args = parser.parse_args()
 
     config = load_config()
