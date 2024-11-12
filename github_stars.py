@@ -357,6 +357,9 @@ if __name__ == "__main__":
     
     # Write repository data before displaying
     write_repo_data(sorted_repos, initial_ignored, timestamp)
+    print(f"\n{Fore.CYAN}Report saved to:")
+    print(f"{Fore.GREEN}  - reports/repo_report_{timestamp}.txt (human readable)")
+    print(f"{Fore.GREEN}  - data/repo_data_{timestamp}.json (machine readable)")
     
     display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
     
