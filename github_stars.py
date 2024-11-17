@@ -121,15 +121,13 @@ def get_top_accounts(csv_file, n):
     return sorted(accounts, key=lambda x: x[1], reverse=True)[:n]
 
 def process_account(args):
-    username, count, token, ignored_repos = args
+    username, count, token = args
     stars = get_newest_stars(username, count, token)
-    filtered_stars = [star for star in stars if f"{star['owner']['login']}/{star['name']}" not in ignored_repos]
-    return [(star, username) for star in filtered_stars], len(stars)
+    return [(star, username) for star in stars], len(stars)
 
 def process_accounts(config_file, top_n, token, args):
     count = args.stars_per_account
     top_accounts = get_top_accounts(args.csv_file, top_n)
-    ignored_repos = load_ignored_repos()
     
     all_stars = []
     total_stars_considered = 0
@@ -137,7 +135,7 @@ def process_accounts(config_file, top_n, token, args):
     with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
             # Prepare arguments for each account
-            process_args = [(username, count, token, ignored_repos) for username, _ in top_accounts]
+            process_args = [(username, count, token) for username, _ in top_accounts]
             
             # Submit all tasks
             future_to_username = {executor.submit(process_account, arg): arg[0] 
