@@ -136,10 +136,13 @@ def process_accounts(config_file, top_n, token, args):
     count = args.stars_per_account
     top_accounts = get_top_accounts(args.csv_file, top_n)
     
+    # Initialize tracking variables
     all_stars = []
     total_stars_considered = 0
     successful_requests = 0
     failed_requests = 0
+    
+    print(f"\n{Fore.CYAN}Starting to process {len(top_accounts)} accounts...")
     
     with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
@@ -426,11 +429,17 @@ if __name__ == "__main__":
 
     display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
 
-    print(f"\n{Fore.CYAN}{'=' * 60}")
+    # Clear any remaining progress bar output
+    print("\n" * 2)
+    
+    print(f"{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
     print(f"{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
     print(f"{Fore.CYAN}Request Statistics:")
-    print(f"{Fore.GREEN}  Successful: {successful_requests}")
-    print(f"{Fore.RED}  Failed: {failed_requests}")
-    print(f"{Fore.CYAN}  Success Rate: {Fore.GREEN}{(successful_requests/(successful_requests+failed_requests)*100):.1f}%")
+    print(f"{Fore.GREEN}  Successful requests: {successful_requests}")
+    print(f"{Fore.RED}  Failed requests: {failed_requests}")
+    if successful_requests + failed_requests > 0:
+        success_rate = (successful_requests/(successful_requests+failed_requests)*100)
+        print(f"{Fore.CYAN}  Success Rate: {Fore.GREEN}{success_rate:.1f}%")
     print(f"{Fore.CYAN}{'=' * 60}")
+    print()  # Add extra newline for spacing
