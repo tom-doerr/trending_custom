@@ -142,9 +142,9 @@ def process_accounts(config_file, top_n, token, args):
     successful_requests = 0
     failed_requests = 0
     
-    print(f"\n{Fore.CYAN}Starting to process {len(top_accounts)} accounts...")
+    print(f"\n{Fore.CYAN}Starting to process {len(top_accounts)} accounts...\n")
     
-    with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
+    with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=False) as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
             # Prepare arguments for each account
             process_args = [(username, count, token) for username, _ in top_accounts]
@@ -429,17 +429,26 @@ if __name__ == "__main__":
 
     display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
 
-    # Clear any remaining progress bar output
-    print("\n" * 2)
+    # Clear screen and show final statistics
+    print("\n" * 3)
+    print(f"{Fore.CYAN}{'=' * 80}")
+    print(f"{Fore.YELLOW}{'REQUEST STATISTICS':^80}")
+    print(f"{Fore.CYAN}{'=' * 80}\n")
     
-    print(f"{Fore.CYAN}{'=' * 60}")
-    print(f"{Fore.YELLOW}Analysis Complete")
-    print(f"{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
-    print(f"{Fore.CYAN}Request Statistics:")
-    print(f"{Fore.GREEN}  Successful requests: {successful_requests}")
-    print(f"{Fore.RED}  Failed requests: {failed_requests}")
+    print(f"{Fore.CYAN}Total stars processed: {Fore.GREEN}{total_stars_considered}")
+    print(f"\n{Fore.CYAN}API Requests:")
+    print(f"{Fore.GREEN}  ✓ Successful: {successful_requests}")
+    print(f"{Fore.RED}  ✗ Failed: {failed_requests}")
+    
     if successful_requests + failed_requests > 0:
         success_rate = (successful_requests/(successful_requests+failed_requests)*100)
-        print(f"{Fore.CYAN}  Success Rate: {Fore.GREEN}{success_rate:.1f}%")
-    print(f"{Fore.CYAN}{'=' * 60}")
-    print()  # Add extra newline for spacing
+        print(f"\n{Fore.CYAN}Success Rate: ", end='')
+        if success_rate > 90:
+            print(f"{Fore.GREEN}{success_rate:.1f}%")
+        elif success_rate > 70:
+            print(f"{Fore.YELLOW}{success_rate:.1f}%")
+        else:
+            print(f"{Fore.RED}{success_rate:.1f}%")
+            
+    print(f"\n{Fore.CYAN}{'=' * 80}")
+    print("\n")  # Add extra spacing
