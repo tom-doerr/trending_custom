@@ -238,8 +238,16 @@ def display_distribution(all_stars, ignored_repos=None):
     print(f"{Fore.CYAN}Total unique repositories: {Fore.GREEN}{total_repos}")
     print(f"{Fore.CYAN}Total stars across repos: {Fore.GREEN}{total_stars}\n")
     
-    for stars, count in sorted(distribution.items()):
-        print(f"{Fore.GREEN}{stars} star{'s' if stars > 1 else ''}: {Fore.YELLOW}{count} repo{'s' if count > 1 else ''}")
+    # Calculate cumulative counts
+    sorted_dist = sorted(distribution.items(), reverse=True)
+    cumulative = 0
+    
+    print(f"{Fore.CYAN}Stars  Repos  Cumulative")
+    print(f"{Fore.CYAN}{'=' * 25}")
+    
+    for stars, count in sorted_dist:
+        cumulative += count
+        print(f"{Fore.GREEN}{stars:5d}  {Fore.YELLOW}{count:5d}  {Fore.CYAN}{cumulative:5d}")
     
     # Create a bar plot of the distribution
     plt.figure(figsize=(10, 6))
