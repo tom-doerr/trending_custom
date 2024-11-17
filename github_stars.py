@@ -196,7 +196,8 @@ def write_repo_data(sorted_repos, ignored_repos, timestamp=None):
                 "name": repo,
                 "stars_count": len(usernames),
                 "status": "Previously Displayed" if repo in ignored_repos else "New",
-                "starred_by": usernames
+                "starred_by": usernames,
+                "is_ignored": repo in ignored_repos
             }
             for repo, usernames in sorted_repos
         ]
@@ -249,7 +250,8 @@ def display_ranking(sorted_repos, interactive=False, all_stars=None, initial_ign
     print(f"{Fore.CYAN}{'=' * 60}\n")
     
     for i, (repo, usernames) in enumerate(sorted_repos, 1):
-        print(f"{Fore.MAGENTA}{i:3}. {Fore.GREEN}{repo}")
+        status = "[PREV]" if repo in ignored_repos else "[NEW]"
+        print(f"{Fore.MAGENTA}{i:3}. {status} {Fore.GREEN}{repo}")
         repo_url = next(star['html_url'] for star, _ in all_stars if f"{star['owner']['login']}/{star['name']}" == repo)
         print(f"    {Fore.CYAN}URL: {Fore.BLUE}{repo_url}")
         print(f"    {Fore.CYAN}Starred by {Fore.YELLOW}{len(usernames)} {Fore.CYAN}account(s):")
