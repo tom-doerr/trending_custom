@@ -341,10 +341,9 @@ def display_ranking(sorted_repos, interactive=False, all_stars=None, initial_ign
             add_to_ignored_repos(repo)
             
             # Check for changes to ignored repos after each repo
-            if recheck_and_display(all_stars, args, initial_ignored):
-                initial_ignored = load_ignored_repos()
-                # Return to avoid continuing with stale data
-                return
+            new_ignored = recheck_and_display(all_stars, args, initial_ignored)
+            if new_ignored:
+                initial_ignored = new_ignored
 
 class IgnoreFileHandler(FileSystemEventHandler):
     def __init__(self):
@@ -381,9 +380,14 @@ def recheck_and_display(all_stars, args, initial_ignored):
             print(f"{Fore.GREEN}Added to ignore list ({len(added)} repos): {', '.join(added)}")
         if removed:
             print(f"{Fore.RED}Removed from ignore list ({len(removed)} repos): {', '.join(removed)}")
-            
-        return True
-    return False
+        
+        # Create new ranking with updated ignored repos
+        sorted_repos = create_ranking(all_stars, args.final_ranking, current_ignored)
+        print("\n" + "=" * 80 + "\n")
+        print(f"{Fore.CYAN}Refreshed repository ranking:")
+        display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=current_ignored)
+        
+    return current_ignored
 
 # Create a global file handler instance
 file_handler = IgnoreFileHandler()
