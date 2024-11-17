@@ -196,8 +196,7 @@ def write_repo_data(sorted_repos, ignored_repos, timestamp=None):
                 "name": repo,
                 "stars_count": len(usernames),
                 "status": "Previously Displayed" if repo in ignored_repos else "New",
-                "starred_by": usernames,
-                "is_ignored": repo in ignored_repos
+                "starred_by": usernames
             }
             for repo, usernames in sorted_repos
         ]
