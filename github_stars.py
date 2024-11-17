@@ -136,6 +136,7 @@ def process_account(args):
         return [], 0, False, True
 
 def process_accounts(config_file, top_n, token, args):
+    start_time = time.time()
     count = args.stars_per_account
     top_accounts = get_top_accounts(args.csv_file, top_n)
     
@@ -441,6 +442,10 @@ if __name__ == "__main__":
     print(f"{Fore.YELLOW}Request Statistics")
     print(f"{Fore.CYAN}{'=' * 60}\n")
     
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    stars_per_second = total_stars_considered / elapsed_time if elapsed_time > 0 else 0
+    
     print(f"{Fore.CYAN}Stars processed: {Fore.GREEN}{total_stars_considered}")
     print(f"{Fore.GREEN}✓ Successful: {successful_requests}")
     print(f"{Fore.RED}✗ Failed: {failed_requests}")
@@ -449,3 +454,7 @@ if __name__ == "__main__":
         success_rate = (successful_requests/(successful_requests+failed_requests)*100)
         rate_color = Fore.GREEN if success_rate > 90 else Fore.YELLOW if success_rate > 70 else Fore.RED
         print(f"{Fore.CYAN}Success Rate: {rate_color}{success_rate:.1f}%")
+    
+    print(f"\n{Fore.CYAN}Speed Statistics:")
+    print(f"{Fore.CYAN}Total time: {Fore.GREEN}{elapsed_time:.1f} seconds")
+    print(f"{Fore.CYAN}Processing speed: {Fore.GREEN}{stars_per_second:.1f} stars/second")
