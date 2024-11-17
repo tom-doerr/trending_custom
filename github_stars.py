@@ -191,13 +191,12 @@ def write_repo_data(sorted_repos, ignored_repos, timestamp=None):
     json_file = data_dir / f"repo_data_{timestamp}.json"
     
     json_data = {
-        "generated_at": timestamp,
         "repositories": [
             {
                 "name": repo,
                 "stars_count": len(usernames),
                 "status": "Previously Displayed" if repo in ignored_repos else "New",
-                "starred_by": [{"username": username} for username in usernames]
+                "starred_by": usernames
             }
             for repo, usernames in sorted_repos
         ]
