@@ -314,10 +314,6 @@ def recheck_and_display(all_stars, args, initial_ignored):
         if removed:
             print(f"{Fore.RED}Removed from ignore list ({len(removed)} repos): {', '.join(removed)}")
             
-        print(f"{Fore.GREEN}Refiltering and displaying updated results...")
-        sorted_repos = create_ranking(all_stars, args.final_ranking, current_ignored)
-        display_distribution(all_stars)
-        display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=current_ignored)
         return True
     return False
 
