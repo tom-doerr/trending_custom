@@ -136,7 +136,6 @@ def process_account(args):
         return [], 0, False, True
 
 def process_accounts(config_file, top_n, token, args):
-    start_time = time.time()
     count = args.stars_per_account
     top_accounts = get_top_accounts(args.csv_file, top_n)
     
@@ -372,6 +371,9 @@ def recheck_and_display(all_stars, args, initial_ignored):
 file_handler = IgnoreFileHandler()
 
 if __name__ == "__main__":
+    # Start timing the execution
+    start_time = time.time()
+    
     # Set up the file system observer
     observer = Observer()
     observer.schedule(file_handler, path='.', recursive=False)
