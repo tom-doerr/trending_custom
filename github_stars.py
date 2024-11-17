@@ -197,14 +197,7 @@ def write_repo_data(sorted_repos, ignored_repos, timestamp=None):
                 "name": repo,
                 "stars_count": len(usernames),
                 "status": "Previously Displayed" if repo in ignored_repos else "New",
-                "starred_by": [
-                    {
-                        "username": username,
-                        "starred_at": next(star['starred_at'] for star, user in all_stars 
-                                     if user == username and f"{star['owner']['login']}/{star['name']}" == repo)
-                    }
-                    for username in usernames
-                ]
+                "starred_by": [{"username": username} for username in usernames]
             }
             for repo, usernames in sorted_repos
         ]
