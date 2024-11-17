@@ -47,6 +47,18 @@ def add_to_ignored_repos(repo):
     with open('ignored_repos.txt', 'a') as f:
         f.write(f"{repo}\n")
 
+def check_rate_limit(token=None):
+    headers = {'Authorization': f'token {token}'} if token else {}
+    response = requests.get('https://api.github.com/rate_limit', headers=headers)
+    if response.status_code == 200:
+        limits = response.json()['resources']['core']
+        remaining = limits['remaining']
+        reset_time = datetime.fromtimestamp(limits['reset']).strftime('%H:%M:%S')
+        total = limits['limit']
+        used = total - remaining
+        return remaining, reset_time, used, total
+    return None, None, None, None
+
 def create_session():
     session = requests.Session()
     retries = Retry(
@@ -192,7 +204,13 @@ def process_accounts(config_file, top_n, token, args):
         if successful_requests + failed_requests > 0:
             success_rate = (successful_requests/(successful_requests+failed_requests)*100)
             rate_color = Fore.GREEN if success_rate > 90 else Fore.YELLOW if success_rate > 70 else Fore.RED
-            print(f"{Fore.CYAN}Success Rate: {rate_color}{success_rate:.1f}%\n")
+            print(f"{Fore.CYAN}Success Rate: {rate_color}{success_rate:.1f}%")
+            
+        # Check and display final rate limit status
+        remaining, reset_time, used, total = check_rate_limit(token)
+        if remaining is not None:
+            print(f"\n{Fore.CYAN}Remaining API calls: {Fore.GREEN}{remaining}/{total}")
+            print(f"{Fore.CYAN}Reset Time: {Fore.YELLOW}{reset_time}\n")
     
     return all_stars, total_stars_considered, successful_requests, failed_requests
 
@@ -415,6 +433,14 @@ if __name__ == "__main__":
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}GitHub Stars Analysis")
     print(f"{Fore.CYAN}{'=' * 60}\n")
+
+    # Check and display rate limit info
+    remaining, reset_time, used, total = check_rate_limit(token)
+    if remaining is not None:
+        print(f"{Fore.CYAN}GitHub API Rate Limit Status:")
+        print(f"{Fore.GREEN}Remaining: {remaining}/{total} requests")
+        print(f"{Fore.YELLOW}Used: {used} requests")
+        print(f"{Fore.CYAN}Reset Time: {reset_time}\n")
     
     initial_ignored = load_ignored_repos()
     if initial_ignored:
