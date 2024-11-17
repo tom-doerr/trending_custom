@@ -177,7 +177,8 @@ def process_accounts(config_file, top_n, token, args):
                 except Exception as e:
                     print(f"{Fore.RED}Error processing {username}: {e}")
                 
-                pbar.set_description(f"Processing {username:<10}")
+                display_name = f"{username[:7]}..." if len(username) > 10 else f"{username:<10}"
+                pbar.set_description(f"Processing {display_name}")
                 pbar.update(1)
     
     return all_stars, total_stars_considered, successful_requests, failed_requests
