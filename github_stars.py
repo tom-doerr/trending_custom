@@ -122,8 +122,12 @@ def get_top_accounts(csv_file, n):
 
 def process_account(args):
     username, count, token = args
-    stars = get_newest_stars(username, count, token)
-    return [(star, username) for star in stars], len(stars)
+    try:
+        stars = get_newest_stars(username, count, token)
+        success = bool(stars)  # True if we got any stars
+        return [(star, username) for star in stars], len(stars), success, not success
+    except Exception:
+        return [], 0, False, True
 
 def process_accounts(config_file, top_n, token, args):
     count = args.stars_per_account
@@ -131,6 +135,8 @@ def process_accounts(config_file, top_n, token, args):
     
     all_stars = []
     total_stars_considered = 0
+    successful_requests = 0
+    failed_requests = 0
     
     with tqdm(total=len(top_accounts), desc="Processing accounts", position=0, leave=True) as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
@@ -145,16 +151,18 @@ def process_accounts(config_file, top_n, token, args):
             for future in concurrent.futures.as_completed(future_to_username):
                 username = future_to_username[future]
                 try:
-                    stars, stars_count = future.result()
+                    stars, stars_count, success, failure = future.result()
                     all_stars.extend(stars)
                     total_stars_considered += stars_count
+                    successful_requests += int(success)
+                    failed_requests += int(failure)
                 except Exception as e:
                     print(f"{Fore.RED}Error processing {username}: {e}")
                 
                 pbar.update(1)
                 pbar.set_description(f"Processing accounts ({pbar.n}/{pbar.total})")
     
-    return all_stars, total_stars_considered
+    return all_stars, total_stars_considered, successful_requests, failed_requests
 
 def write_repo_data(sorted_repos, ignored_repos, timestamp=None):
     """Write repository data to timestamped files in both human and machine readable formats"""
@@ -379,7 +387,7 @@ if __name__ == "__main__":
     
     print(f"{Fore.GREEN}Processing top {Fore.YELLOW}{args.top_accounts} {Fore.GREEN}accounts...")
     print(f"{Fore.GREEN}Considering {Fore.YELLOW}{args.stars_per_account} {Fore.GREEN}newest stars per account...")
-    all_stars, total_stars_considered = process_accounts(config_file, args.top_accounts, token, args)
+    all_stars, total_stars_considered, successful_requests, failed_requests = process_accounts(config_file, args.top_accounts, token, args)
     
     # These counts will be shown in display_distribution() with ignored repos excluded
     
@@ -412,4 +420,8 @@ if __name__ == "__main__":
     print(f"\n{Fore.CYAN}{'=' * 60}")
     print(f"{Fore.YELLOW}Analysis Complete")
     print(f"{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
+    print(f"{Fore.CYAN}Request Statistics:")
+    print(f"{Fore.GREEN}  Successful: {successful_requests}")
+    print(f"{Fore.RED}  Failed: {failed_requests}")
+    print(f"{Fore.CYAN}  Success Rate: {Fore.GREEN}{(successful_requests/(successful_requests+failed_requests)*100):.1f}%")
     print(f"{Fore.CYAN}{'=' * 60}")
