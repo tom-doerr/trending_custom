@@ -124,9 +124,12 @@ def process_account(args):
     username, count, token = args
     try:
         stars = get_newest_stars(username, count, token)
-        success = bool(stars)  # True if we got any stars
-        return [(star, username) for star in stars], len(stars), success, not success
-    except Exception:
+        if stars:  # If we got any stars back
+            return [(star, username) for star in stars], len(stars), True, False
+        else:  # If we got an empty list but no exception
+            return [], 0, False, True
+    except Exception as e:
+        print(f"{Fore.RED}Error in process_account for {username}: {str(e)}")
         return [], 0, False, True
 
 def process_accounts(config_file, top_n, token, args):
@@ -151,11 +154,17 @@ def process_accounts(config_file, top_n, token, args):
             for future in concurrent.futures.as_completed(future_to_username):
                 username = future_to_username[future]
                 try:
-                    stars, stars_count, success, failure = future.result()
-                    all_stars.extend(stars)
-                    total_stars_considered += stars_count
-                    successful_requests += int(success)
-                    failed_requests += int(failure)
+                    try:
+                        stars, stars_count, success, failure = future.result()
+                        all_stars.extend(stars)
+                        total_stars_considered += stars_count
+                        if success:
+                            successful_requests += 1
+                        if failure:
+                            failed_requests += 1
+                    except Exception as e:
+                        print(f"{Fore.RED}Error processing results for {username}: {str(e)}")
+                        failed_requests += 1
                 except Exception as e:
                     print(f"{Fore.RED}Error processing {username}: {e}")
                 
