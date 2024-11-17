@@ -59,8 +59,9 @@ def create_session():
     return session
 
 def get_newest_stars(username, count, token):
-    # Use tqdm.write to avoid interfering with progress bar
-    tqdm.write(f"{Fore.CYAN}Fetching stars for user: {username}", end='\r')
+    # Use debug level logging instead of print
+    if os.getenv('DEBUG'):
+        tqdm.write(f"{Fore.CYAN}Fetching stars for user: {username}")
     url = f"https://api.github.com/users/{username}/starred?timestamp=1"
     params = {
         "sort": "created",
@@ -99,7 +100,8 @@ def get_newest_stars(username, count, token):
     stars = response.json()
     
     if not stars:
-        tqdm.write(f"{Fore.YELLOW}No starred repositories found for {username}", end='\r')
+        if os.getenv('DEBUG'):
+            tqdm.write(f"{Fore.YELLOW}No starred repositories found for {username}")
         return []
     
     return stars
@@ -143,14 +145,14 @@ def process_accounts(config_file, top_n, token, args):
     successful_requests = 0
     failed_requests = 0
     
-    print(f"{Fore.CYAN}Starting to process {len(top_accounts)} accounts...")
+    print(f"{Fore.CYAN}Starting to process {len(top_accounts)} accounts...\n")
     
-    with tqdm(total=len(top_accounts), 
+    with tqdm(total=len(top_accounts),
              desc="Processing accounts",
              position=0,
-             leave=False,
+             leave=True,
              ncols=80,
-             bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
+             bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
             # Prepare arguments for each account
             process_args = [(username, count, token) for username, _ in top_accounts]
