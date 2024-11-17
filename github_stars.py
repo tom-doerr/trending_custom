@@ -149,7 +149,6 @@ def process_accounts(config_file, top_n, token, args):
     
     with tqdm(total=len(top_accounts),
              desc="Starting...",
-             ncols=100,
              bar_format='{desc:<30}{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
             # Prepare arguments for each account
