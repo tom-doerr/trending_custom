@@ -148,9 +148,9 @@ def process_accounts(config_file, top_n, token, args):
     print(f"{Fore.CYAN}Starting to process {len(top_accounts)} accounts...\n")
     
     with tqdm(total=len(top_accounts),
-             desc="Processing accounts",
-             ncols=70,
-             bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}') as pbar:
+             desc="Starting...",
+             ncols=80,
+             bar_format='{desc:<30}{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}') as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
             # Prepare arguments for each account
             process_args = [(username, count, token) for username, _ in top_accounts]
@@ -177,6 +177,7 @@ def process_accounts(config_file, top_n, token, args):
                 except Exception as e:
                     print(f"{Fore.RED}Error processing {username}: {e}")
                 
+                pbar.set_description(f"Processing {username:<20}")
                 pbar.update(1)
     
     return all_stars, total_stars_considered, successful_requests, failed_requests
