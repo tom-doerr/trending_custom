@@ -150,6 +150,11 @@ def process_accounts(config_file, top_n, token, args):
     with tqdm(total=len(top_accounts),
              desc="Starting...",
              bar_format='{desc:<30}{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
+        
+        print(f"\n{Fore.CYAN}{'=' * 60}")
+        print(f"{Fore.YELLOW}Request Progress")
+        print(f"{Fore.CYAN}{'=' * 60}\n")
+        
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
             # Prepare arguments for each account
             process_args = [(username, count, token) for username, _ in top_accounts]
@@ -179,6 +184,15 @@ def process_accounts(config_file, top_n, token, args):
                 display_name = f"{username[:7]}..." if len(username) > 10 else f"{username:<10}"
                 pbar.set_description(f"Processing {display_name}")
                 pbar.update(1)
+        
+        # Display request statistics immediately after progress bar
+        print(f"\n{Fore.GREEN}✓ Successful requests: {successful_requests}")
+        print(f"{Fore.RED}✗ Failed requests: {failed_requests}")
+        
+        if successful_requests + failed_requests > 0:
+            success_rate = (successful_requests/(successful_requests+failed_requests)*100)
+            rate_color = Fore.GREEN if success_rate > 90 else Fore.YELLOW if success_rate > 70 else Fore.RED
+            print(f"{Fore.CYAN}Success Rate: {rate_color}{success_rate:.1f}%\n")
     
     return all_stars, total_stars_considered, successful_requests, failed_requests
 
@@ -448,14 +462,6 @@ if __name__ == "__main__":
     stars_per_second = total_stars_considered / elapsed_time if elapsed_time > 0 else 0
     
     print(f"{Fore.CYAN}Stars processed: {Fore.GREEN}{total_stars_considered}")
-    print(f"{Fore.GREEN}✓ Successful: {successful_requests}")
-    print(f"{Fore.RED}✗ Failed: {failed_requests}")
-    
-    if successful_requests + failed_requests > 0:
-        success_rate = (successful_requests/(successful_requests+failed_requests)*100)
-        rate_color = Fore.GREEN if success_rate > 90 else Fore.YELLOW if success_rate > 70 else Fore.RED
-        print(f"{Fore.CYAN}Success Rate: {rate_color}{success_rate:.1f}%")
-    
     print(f"\n{Fore.CYAN}Speed Statistics:")
     print(f"{Fore.CYAN}Total time: {Fore.GREEN}{elapsed_time:.1f} seconds")
     print(f"{Fore.CYAN}Processing speed: {Fore.GREEN}{stars_per_second:.1f} stars/second")
