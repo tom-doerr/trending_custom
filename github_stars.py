@@ -147,6 +147,20 @@ def process_account(args):
         print(f"{Fore.RED}Error in process_account for {username}: {str(e)}")
         return [], 0, False, True
 
+def display_request_stats(successful_requests, failed_requests, token):
+    if successful_requests + failed_requests > 0:
+        success_rate = (successful_requests/(successful_requests+failed_requests)*100)
+        rate_color = Fore.GREEN if success_rate > 90 else Fore.YELLOW if success_rate > 70 else Fore.RED
+        print(f"\n{Fore.GREEN}✓ Successful requests: {successful_requests}")
+        print(f"{Fore.RED}✗ Failed requests: {failed_requests}")
+        print(f"{Fore.CYAN}Success Rate: {rate_color}{success_rate:.1f}%")
+        
+        # Check and display rate limit status
+        remaining, reset_time, used, total = check_rate_limit(token)
+        if remaining is not None:
+            print(f"{Fore.CYAN}Remaining API calls: {Fore.GREEN}{remaining}/{total}")
+            print(f"{Fore.CYAN}Reset Time: {Fore.YELLOW}{reset_time}\n")
+
 def process_accounts(config_file, top_n, token, args):
     count = args.stars_per_account
     top_accounts = get_top_accounts(args.csv_file, top_n)
@@ -156,6 +170,7 @@ def process_accounts(config_file, top_n, token, args):
     total_stars_considered = 0
     successful_requests = 0
     failed_requests = 0
+    last_stats_check = 0
     
     print(f"{Fore.CYAN}Starting to process {len(top_accounts)} accounts...\n")
     
@@ -196,21 +211,14 @@ def process_accounts(config_file, top_n, token, args):
                 display_name = f"{username[:7]}..." if len(username) > 10 else f"{username:<10}"
                 pbar.set_description(f"Processing {display_name}")
                 pbar.update(1)
+                
+                # Display stats every 10 requests
+                if successful_requests + failed_requests - last_stats_check >= 10:
+                    display_request_stats(successful_requests, failed_requests, token)
+                    last_stats_check = successful_requests + failed_requests
         
-        # Display request statistics immediately after progress bar
-        print(f"\n{Fore.GREEN}✓ Successful requests: {successful_requests}")
-        print(f"{Fore.RED}✗ Failed requests: {failed_requests}")
-        
-        if successful_requests + failed_requests > 0:
-            success_rate = (successful_requests/(successful_requests+failed_requests)*100)
-            rate_color = Fore.GREEN if success_rate > 90 else Fore.YELLOW if success_rate > 70 else Fore.RED
-            print(f"{Fore.CYAN}Success Rate: {rate_color}{success_rate:.1f}%")
-            
-        # Check and display final rate limit status
-        remaining, reset_time, used, total = check_rate_limit(token)
-        if remaining is not None:
-            print(f"\n{Fore.CYAN}Remaining API calls: {Fore.GREEN}{remaining}/{total}")
-            print(f"{Fore.CYAN}Reset Time: {Fore.YELLOW}{reset_time}\n")
+        # Display final statistics
+        display_request_stats(successful_requests, failed_requests, token)
     
     return all_stars, total_stars_considered, successful_requests, failed_requests
 
