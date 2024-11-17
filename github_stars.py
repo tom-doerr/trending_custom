@@ -152,7 +152,7 @@ def process_accounts(config_file, top_n, token, args):
              position=0,
              leave=True,
              ncols=80,
-             bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
+             bar_format='{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as executor:
             # Prepare arguments for each account
             process_args = [(username, count, token) for username, _ in top_accounts]
@@ -180,7 +180,6 @@ def process_accounts(config_file, top_n, token, args):
                     print(f"{Fore.RED}Error processing {username}: {e}")
                 
                 pbar.update(1)
-                pbar.set_description(f"Processing accounts ({pbar.n}/{pbar.total})")
     
     return all_stars, total_stars_considered, successful_requests, failed_requests
 
@@ -437,26 +436,16 @@ if __name__ == "__main__":
 
     display_ranking(sorted_repos, interactive=not args.no_interactive, all_stars=all_stars, initial_ignored=initial_ignored)
 
-    # Clear screen and show final statistics
-    print("\n" * 3)
-    print(f"{Fore.CYAN}{'=' * 80}")
-    print(f"{Fore.YELLOW}{'REQUEST STATISTICS':^80}")
-    print(f"{Fore.CYAN}{'=' * 80}\n")
+    # Show final statistics
+    print(f"\n{Fore.CYAN}{'=' * 60}")
+    print(f"{Fore.YELLOW}Request Statistics")
+    print(f"{Fore.CYAN}{'=' * 60}\n")
     
-    print(f"{Fore.CYAN}Total stars processed: {Fore.GREEN}{total_stars_considered}")
-    print(f"\n{Fore.CYAN}API Requests:")
-    print(f"{Fore.GREEN}  ✓ Successful: {successful_requests}")
-    print(f"{Fore.RED}  ✗ Failed: {failed_requests}")
+    print(f"{Fore.CYAN}Stars processed: {Fore.GREEN}{total_stars_considered}")
+    print(f"{Fore.GREEN}✓ Successful: {successful_requests}")
+    print(f"{Fore.RED}✗ Failed: {failed_requests}")
     
     if successful_requests + failed_requests > 0:
         success_rate = (successful_requests/(successful_requests+failed_requests)*100)
-        print(f"\n{Fore.CYAN}Success Rate: ", end='')
-        if success_rate > 90:
-            print(f"{Fore.GREEN}{success_rate:.1f}%")
-        elif success_rate > 70:
-            print(f"{Fore.YELLOW}{success_rate:.1f}%")
-        else:
-            print(f"{Fore.RED}{success_rate:.1f}%")
-            
-    print(f"\n{Fore.CYAN}{'=' * 80}")
-    print("\n")  # Add extra spacing
+        rate_color = Fore.GREEN if success_rate > 90 else Fore.YELLOW if success_rate > 70 else Fore.RED
+        print(f"{Fore.CYAN}Success Rate: {rate_color}{success_rate:.1f}%")
