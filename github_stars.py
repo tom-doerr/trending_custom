@@ -215,13 +215,28 @@ def create_ranking(all_stars, top_repos, ignored_repos=None):
     sorted_repos = sorted(repo_counts.items(), key=lambda x: len(x[1]), reverse=True)[:top_repos]
     return sorted_repos
 
-def display_distribution(all_stars):
-    star_counts = Counter(star['id'] for star, _ in all_stars)
+def display_distribution(all_stars, ignored_repos=None):
+    if ignored_repos is None:
+        ignored_repos = set()
+        
+    # Only count non-ignored repos
+    star_counts = Counter()
+    for star, _ in all_stars:
+        repo_key = f"{star['owner']['login']}/{star['name']}"
+        if repo_key not in ignored_repos:
+            star_counts[star['id']] += 1
+            
     distribution = Counter(star_counts.values())
     
     print(f"\n{Fore.CYAN}{'=' * 60}")
-    print(f"{Fore.YELLOW}Star Distribution")
+    print(f"{Fore.YELLOW}Star Distribution (Excluding Ignored Repos)")
     print(f"{Fore.CYAN}{'=' * 60}\n")
+    
+    total_repos = sum(distribution.values())
+    total_stars = sum(stars * count for stars, count in distribution.items())
+    
+    print(f"{Fore.CYAN}Total unique repositories: {Fore.GREEN}{total_repos}")
+    print(f"{Fore.CYAN}Total stars across repos: {Fore.GREEN}{total_stars}\n")
     
     for stars, count in sorted(distribution.items()):
         print(f"{Fore.GREEN}{stars} star{'s' if stars > 1 else ''}: {Fore.YELLOW}{count} repo{'s' if count > 1 else ''}")
@@ -358,11 +373,9 @@ if __name__ == "__main__":
     print(f"{Fore.GREEN}Considering {Fore.YELLOW}{args.stars_per_account} {Fore.GREEN}newest stars per account...")
     all_stars, total_stars_considered = process_accounts(config_file, args.top_accounts, token, args)
     
-    total_repos = len(set(star['id'] for star, _ in all_stars))
-    print(f"\n{Fore.CYAN}Total stars considered: {Fore.GREEN}{total_stars_considered}")
-    print(f"{Fore.CYAN}Total unique repositories: {Fore.GREEN}{total_repos}")
+    # These counts will be shown in display_distribution() with ignored repos excluded
     
-    display_distribution(all_stars)
+    display_distribution(all_stars, initial_ignored)
     
     sorted_repos = create_ranking(all_stars, args.final_ranking, initial_ignored)
     
