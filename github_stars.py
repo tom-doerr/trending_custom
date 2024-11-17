@@ -247,7 +247,7 @@ def display_ranking(sorted_repos, interactive=False, all_stars=None, initial_ign
     print(f"{Fore.CYAN}{'=' * 60}\n")
     
     for i, (repo, usernames) in enumerate(sorted_repos, 1):
-        status = "[PREV]" if repo in initial_ignored else "[NEW]"
+        status = "[PREV]" if repo in initial_ignored else ""
         print(f"{Fore.MAGENTA}{i:3}. {status} {Fore.GREEN}{repo}")
         repo_url = next(star['html_url'] for star, _ in all_stars if f"{star['owner']['login']}/{star['name']}" == repo)
         print(f"    {Fore.CYAN}URL: {Fore.BLUE}{repo_url}")
