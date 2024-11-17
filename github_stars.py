@@ -375,8 +375,9 @@ if __name__ == "__main__":
     # Generate timestamp for this run
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    # Write repository data before displaying
-    write_repo_data(sorted_repos, initial_ignored, timestamp)
+    # Write all repository data before displaying
+    all_sorted_repos = create_ranking(all_stars, len(all_stars), initial_ignored)  # Get all repos
+    write_repo_data(all_sorted_repos, initial_ignored, timestamp)
     print(f"\n{Fore.CYAN}Report saved to:")
     print(f"{Fore.GREEN}  - reports/repo_report_{timestamp}.txt (human readable)")
     print(f"{Fore.GREEN}  - data/repo_data_{timestamp}.json (machine readable)")
