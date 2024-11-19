@@ -183,3 +183,5 @@ ignored_repos.txt
 
 github_following_repo_prediction.csv
 old_account_csvs/
+
+*.csv
