@@ -58,19 +58,12 @@ def display_api_status():
     print("\nGitHub API Status:")
     print("=" * 50)
 
-    # Core API limits
-    core = rate_limits['resources']['core']
-    print("\nCore API:")
-    print(f"  Remaining calls: {core['remaining']}/{core['limit']}")
-    print(f"  Reset in: {format_time_until_reset(core['reset'])}")
-    print(f"  Usage: {((core['limit'] - core['remaining']) / core['limit'] * 100):.1f}%")
-
-    # Search API limits
-    search = rate_limits['resources']['search']
-    print("\nSearch API:")
-    print(f"  Remaining calls: {search['remaining']}/{search['limit']}")
-    print(f"  Reset in: {format_time_until_reset(search['reset'])}")
-    print(f"  Usage: {((search['limit'] - search['remaining']) / search['limit'] * 100):.1f}%")
+    # Integration manifest API limits
+    integration = rate_limits['resources']['integration_manifest']
+    print("\nIntegration Manifest API:")
+    print(f"  Remaining calls: {integration['remaining']}/{integration['limit']}")
+    print(f"  Reset in: {format_time_until_reset(integration['reset'])}")
+    print(f"  Usage: {((integration['limit'] - integration['remaining']) / integration['limit'] * 100):.1f}%")
 
     # Graphql API limits
     graphql = rate_limits['resources']['graphql']
@@ -79,12 +72,19 @@ def display_api_status():
     print(f"  Reset in: {format_time_until_reset(graphql['reset'])}")
     print(f"  Usage: {((graphql['limit'] - graphql['remaining']) / graphql['limit'] * 100):.1f}%")
 
-    # Integration manifest API limits
-    integration = rate_limits['resources']['integration_manifest']
-    print("\nIntegration Manifest API:")
-    print(f"  Remaining calls: {integration['remaining']}/{integration['limit']}")
-    print(f"  Reset in: {format_time_until_reset(integration['reset'])}")
-    print(f"  Usage: {((integration['limit'] - integration['remaining']) / integration['limit'] * 100):.1f}%")
+    # Search API limits
+    search = rate_limits['resources']['search']
+    print("\nSearch API:")
+    print(f"  Remaining calls: {search['remaining']}/{search['limit']}")
+    print(f"  Reset in: {format_time_until_reset(search['reset'])}")
+    print(f"  Usage: {((search['limit'] - search['remaining']) / search['limit'] * 100):.1f}%")
+
+    # Core API limits
+    core = rate_limits['resources']['core']
+    print("\nCore API:")
+    print(f"  Remaining calls: {core['remaining']}/{core['limit']}")
+    print(f"  Reset in: {format_time_until_reset(core['reset'])}")
+    print(f"  Usage: {((core['limit'] - core['remaining']) / core['limit'] * 100):.1f}%")
 
 if __name__ == "__main__":
     display_api_status()
