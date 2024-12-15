@@ -32,14 +32,7 @@ pip install -r requirements.txt
 ```
 
 3. Configure your GitHub token:
-   - Create a `config.json` file:
-```json
-{
-    "count": 5,
-    "github_token": "your_github_token_here"
-}
-```
-   - Or use environment variables:
+   - Use environment variables:
 ```bash
 export GITHUB_TOKEN=your_github_token_here
 ```
