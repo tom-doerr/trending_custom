@@ -22,7 +22,7 @@ Powerful Python scripts for analyzing GitHub user data, including following rela
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/github-analytics-tools.git
+git clone https://github.com/tom-doerr/github-analytics-tools.git
 cd github-analytics-tools
 ```
 
